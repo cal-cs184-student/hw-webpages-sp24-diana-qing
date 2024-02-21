@@ -41,7 +41,7 @@
 
 <p>To rasterize triangles, I iterate through each pixel in the bounding box and use the 3-line point-in-triangle test to determine whether the pixel should be filled in based on whether the (x, y) point corresponding to that pixel falls inside or on the edge of the triangle. If it does, I fill the pixel in using the color passed into rasterize_triangle. Otherwise, I don’t fill the pixel in. The point corresponding to a pixel is always the point at the center of the pixel (i.e. if (x, y) is the point at the upper left corner of a pixel, (x+0.5, y+0.5) is used for that pixel when conducting the point-in-triangle test).</p>
 
-<p>Given a point (x, y) at the center of a pixel and 2 adjacent points (x0, y0) and (x1, y1), a line test is performed by computing -(x - x0) * (y1 - y0) + (y - y0) * (x1 - x0). After performing all 3 tests, if the outcome of all 3 tests is >= 0, or if the outcome of all 3 tests is <= 0, then the point is either inside or on the edge of the triangle and thus the pixel can be filled in. In lecture, we only filled the pixel in when the outcome of all 3 tests was > 0, but this was because the 3 triangle vertices were in a counterclockwise orientation. Since the triangle vertices can be passed into rasterize_triangle in either clockwise or counterclockwise order, as long as all 3 line test outcomes have the same sign or are equal to zero, the pixel can be filled in. We also include the = sign in our check because points on the edge of the triangle should be drawn.</p>
+<p>Given a point (x, y) at the center of a pixel and 2 adjacent points (x0, y0) and (x1, y1), a line test is performed by computing -(x - x0) * (y1 - y0) + (y - y0) * (x1 - x0). After performing all 3 tests, if the outcome of all 3 tests is >= 0, or if the outcome of all 3 tests is <= 0, then the point is either inside or on the edge of the triangle and thus the pixel can be filled in. In lecture, we only filled the pixel in when the outcome of all 3 tests was > 0, but this was because the 3 triangle vertices were in a counterclockwise orientation. Since the triangle vertices can be passed into rasterize_triangle in either clockwise or counterclockwise order, as long as all 3 line test outcomes have the same sign or are equal to zero, the pixel can be filled in. The = sign is included in the check because points on the edge of the triangle should be drawn.</p>
 
 <p>My algorithm is no worse than one that checks each sample within the bounding box of the triangle because it only iterates through and looks at pixels inside the bounding box.</p>
 
@@ -125,7 +125,7 @@ Results from supersampling basic/test4.svg:
 	</table>
 </div>
 
-<p><b>Extra Credit: </b>Jittering Sampling</p>
+<p><b>Extra Credit: </b>Jittered Sampling</p>
 <p>An alternative antialiasing method I implemented is jittered sampling (results below). In both grid supersampling and jittered sampling, we split each pixel into sqrt(sample_rate) rows and sqrt(sample_rate) columns, thus creating sqrt(sample_rate) * sqrt(sample_rate) sub-pixels within each pixel. However, grid supersampling always samples each sub-pixel at its center, which means within a pixel, all the supersamples are evenly spaced out. Jittered sampling lets us randomly pick a point inside the sub-pixel to sample instead of always having to pick the point at the center of the sub-pixel, which means within a pixel, the supersamples aren’t evenly spaced out. Jittered sampling results in the pixels being more smoothly blended in with each other compared to grid-based. The transition of the different shades of red is also more gradual and less harsh using jittered sampling.</p>
 <div align="middle">
 	<table style="width=100%">
@@ -203,7 +203,7 @@ Result of pressing "D" to rotate viewport right:
 <h2 align="middle">Section II: Sampling</h2>
 
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
-<p></p>
+<p>Barycentric coordinates are a system where coordinates are defined by 3 values: alpha, beta, and gamma. They allow us to linearly interpolate values across a triangle. For example, the svg triangle below has 1 red, 1 blue, and 1 green vertex. It’s smoothly blended because the vertex colors were linearly interpolated across the triangle as the color corresponding to a point in the triangle can be understood as a weighted sum between the 3 vertices of the triangle and the weights alpha, beta, and gamma. Let’s say the red vertex corresponds to A, blue vertex corresponds to B, and the green vertex corresponds to C. For some point (x, y) inside the triangle, (x, y) = alpha*A + beta*B + gamma*C. If (x, y) is situated on vertex A, then we know (alpha, beta, gamma) = (1, 0, 0), which means (x, y) = A and thus (x, y) is red. Instead of color, we can also linearly interpolate other values like texture. Another property of barycentric coordinates is that alpha, beta, and gamma sum to 1. This makes barycentric coordinates helpful for determining whether a point lies in the triangle because if any of alpha, beta, or gamma is < 0, then we know the point lies outside the triangle.</p>
 <div align="middle">
   <table style="width=100%">
     <tr>

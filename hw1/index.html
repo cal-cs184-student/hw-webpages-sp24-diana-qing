@@ -49,9 +49,7 @@
 <img src="build/q1/test4.png" align="middle" width="400px"/>
 <figcaption align="middle">basic/test4.svg with the default viewing parameters. Pixel inspector is centered on the left edge of the blue triangle, which shows how aliasing is present as there are jaggies. </figcaption>
 
-<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
-
-<p><b>Extra Credit</b>One optimization I made to speed up rasterization is using barycentric coordinates instead of the 3-line triangle-in-point test to determine if a point falls inside the triangle. In the triangle-in-point test, since the coordinates could be passed into rasterize_triangle in clockwise or counterclockwise order, we have to do 2 checks to determine if the point is inside the triangle: (1) checking that all 3 lines are >= 0 or (2) checking that all 3 lines are <= 0. However, with barycentric coordinates, we just have to do 1 check (checking that alpha, beta, and gamma are all >= 0) to determine if the point is inside the triangle, which reduces rasterization time.</p>
+<p><b>Extra Credit: </b>One optimization I made to speed up rasterization is using barycentric coordinates instead of the 3-line triangle-in-point test to determine if a point falls inside the triangle. In the triangle-in-point test, since the coordinates could be passed into rasterize_triangle in clockwise or counterclockwise order, we have to do 2 checks to determine if the point is inside the triangle: (1) checking that all 3 lines are >= 0 or (2) checking that all 3 lines are <= 0. However, with barycentric coordinates, we just have to do 1 check (checking that alpha, beta, and gamma are all >= 0) to determine if the point is inside the triangle, which reduces rasterization time.</p>
 <p>Another optimization I made is factoring out redundant arithmetic operations from loops. For example, each time we go through the innermost loop, we calculate y2 - y1. Thus, I calculated the result of y2 - y1 outside the loop, and used the result directly in the loop to prevent having to re-compute y2 - y1 each time we go through the loop. I did this for all arithmetic operations that were being re-computed each time in the loop.</p>
 <p>Below is the timing comparison table between triangle rasterization with and without optimizations. Each value represents the time taken (in milliseconds) to rasterize tests 1-6 in svg/basic. For all tests, the rasterization time is lower when using optimizations, especially for tests 3 and 4. These times were determined by using clock() around svg.draw() in DrawRend::redraw() to determine time taken for svg.draw() to run.</p>
 
@@ -116,7 +114,7 @@ Grid-based Supersampling:
 	</table>
 </div>
 
-<p><b>Extra Credit:</b>Jittering Sampling:</p>
+<p><b>Extra Credit: </b>Jittering Sampling:</p>
 <div align="middle">
 	<table style="width=100%">
 	  <tr>
@@ -141,7 +139,7 @@ Grid-based Supersampling:
   <table style="width=100%">
     <tr>
       <td>
-        <img src="build/q3/my_robot.png" align="middle" width="200px"/>
+        <img src="build/q3/my_robot.png" align="middle" width="400px"/>
         <figcaption align="middle">Updated version of svg/transforms/robot.svg where Cubeman is waving with his right arm. I also changed his colors to make it look like he's wearing a red T-shirt and blue pants.</figcaption>
       </td>
     </tr>
@@ -150,12 +148,12 @@ Grid-based Supersampling:
 
 <p><b>Extra Credit:</b> An extra feature I added to my GUI is adding keyboard shortcuts (using two currently unused keys) to rotate the viewport. Pressing “A” rotates the viewport 90 degrees left (from the viewport’s current orientation), while pressing “D” rotates the viewport 90 degrees right.</p>
 
+Result of pressing "A" to rotate viewport left:
 <div align="middle">
 	<table style="width=100%">
 	  <tr>
 		<td>
 		  <img src="build/q3/my_robot.png" align="middle" width="400px"/>
-		  <figcaption align="middle">Result of pressing "A" to rotate viewport left.</figcaption>
 		</td>
 		<td>
 		  <img src="build/q3/my_robot_left90.png" align="middle" width="400px"/>
@@ -167,22 +165,27 @@ Grid-based Supersampling:
 			<img src="build/q3/my_robot_left90_3.png" align="middle" width="400px"/>
 		</td>
 	  </tr>
-	  <br>
-	  <td>
-		<img src="build/q3/my_robot_2.png" align="middle" width="400px"/>
-		<figcaption align="middle">Result of pressing "D" to rotate viewport right.</figcaption>
-	  </td>
-	  <td>
-		<img src="build/q3/my_robot_right90.png" align="middle" width="400px"/>
-	  </td>
-	  <td>
-		  <img src="build/q3/my_robot_right90_2.png" align="middle" width="400px"/>
-	  </td>
-	  <td>
-		  <img src="build/q3/my_robot_right90_3.png" align="middle" width="400px"/>
-	  </td>
 	</table>
-  </div>
+</div>
+Result of pressing "D" to rotate viewport left:
+<div align="middle">
+	<table style="width=100%">
+		<tr>
+			<td>
+				<img src="build/q3/my_robot_2.png" align="middle" width="400px"/>
+			</td>
+			<td>
+				<img src="build/q3/my_robot_right90.png" align="middle" width="400px"/>
+			</td>
+			<td>
+				<img src="build/q3/my_robot_right90_2.png" align="middle" width="400px"/>
+			</td>
+			<td>
+				<img src="build/q3/my_robot_right90_3.png" align="middle" width="400px"/>
+			</td>
+		</tr>
+	</table>
+</div>
 
 
 <h2 align="middle">Section II: Sampling</h2>
@@ -211,22 +214,22 @@ An example where bilinear sampling defeats nearest sampling can be seen in texma
 	  <tr>
 		<td>
 		  <img src="build/q5/nearest_sr1.png" align="middle" width="400px"/>
-		  <figcaption align="middle">nearest sampling with sample rate 1.</figcaption>
+		  <figcaption align="middle">nearest sampling with sample rate 1</figcaption>
 		</td>
 		<td>
 		  <img src="build/q5/bilinear_sr1.png" align="middle" width="400px"/>
-		  <figcaption align="middle">bilinear sampling with sample rate 1.</figcaption>
+		  <figcaption align="middle">bilinear sampling with sample rate 1</figcaption>
 		</td>
 	  </tr>
 	  <br>
 	  <tr>
 		<td>
 		  <img src="build/q5/nearest_sr16.png" align="middle" width="400px"/>
-		  <figcaption align="middle">nearest sampling with sample rate 16.</figcaption>
+		  <figcaption align="middle">nearest sampling with sample rate 16</figcaption>
 		</td>
 		<td>
 		  <img src="build/q5/bilinear_sr16.png" align="middle" width="400px"/>
-		  <figcaption align="middle">bilinear sampling with sample rate 16.</figcaption>
+		  <figcaption align="middle">bilinear sampling with sample rate 16</figcaption>
 		</td>
 	  </tr>
 	</table>
@@ -239,22 +242,22 @@ An example where bilinear sampling defeats nearest sampling can be seen in texma
 	  <tr>
 		<td>
 		  <img src="build/q6/Lzero_Pnearest.png" align="middle" width="400px"/>
-		  <figcaption align="middle">L_ZERO and P_NEAREST.</figcaption>
+		  <figcaption align="middle">L_ZERO and P_NEAREST</figcaption>
 		</td>
 		<td>
 		  <img src="build/q6/Lzero_Plinear.png" align="middle" width="400px"/>
-		  <figcaption align="middle">bL_ZERO and P_LINEAR.</figcaption>
+		  <figcaption align="middle">bL_ZERO and P_LINEAR</figcaption>
 		</td>
 	  </tr>
 	  <br>
 	  <tr>
 		<td>
 		  <img src="build/q6/Lnearest_Pnearest.png" align="middle" width="400px"/>
-		  <figcaption align="middle">L_NEAREST and P_NEAREST.</figcaption>
+		  <figcaption align="middle">L_NEAREST and P_NEAREST</figcaption>
 		</td>
 		<td>
 		  <img src="build/q6/Lnearest_Plinear.png" align="middle" width="400px"/>
-		  <figcaption align="middle">L_NEAREST and P_LINEAR.</figcaption>
+		  <figcaption align="middle">L_NEAREST and P_LINEAR</figcaption>
 		</td>
 	  </tr>
 	</table>

@@ -30,7 +30,7 @@
 <br><br>
 
 <div>
-
+<p>Webpage: https://cal-cs184-student.github.io/hw-webpages-sp24-diana-qing/</p>
 <h2 align="middle">Overview</h2>
 <p>Give a high-level overview of what you implemented in this homework Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.</p>
 
@@ -45,15 +45,22 @@
 
 <p>My algorithm is no worse than one that checks each sample within the bounding box of the triangle because it only iterates through and looks at pixels inside the bounding box.</p>
 
-
-<img src="build/q1/test4.png" align="middle" width="400px"/>
-<figcaption align="middle">basic/test4.svg with the default viewing parameters. Pixel inspector is centered on the left edge of the blue triangle, which shows how aliasing is present as there are jaggies. </figcaption>
+<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+			<img src="build/q1/test4.png" align="middle" width="400px"/>
+			<figcaption align="middle">basic/test4.svg with the default viewing parameters. Pixel inspector is centered on the left edge of the blue triangle, which shows how aliasing is present as there are jaggies.</figcaption>
+		</td>
+	  </tr>
+	</table>
+</div>
 
 <p><b>Extra Credit: </b>One optimization I made to speed up rasterization is using barycentric coordinates instead of the 3-line triangle-in-point test to determine if a point falls inside the triangle. In the triangle-in-point test, since the coordinates could be passed into rasterize_triangle in clockwise or counterclockwise order, we have to do 2 checks to determine if the point is inside the triangle: (1) checking that all 3 lines are >= 0 or (2) checking that all 3 lines are <= 0. However, with barycentric coordinates, we just have to do 1 check (checking that alpha, beta, and gamma are all >= 0) to determine if the point is inside the triangle, which reduces rasterization time.</p>
 <p>Another optimization I made is factoring out redundant arithmetic operations from loops. For example, each time we go through the innermost loop, we calculate y2 - y1. Thus, I calculated the result of y2 - y1 outside the loop, and used the result directly in the loop to prevent having to re-compute y2 - y1 each time we go through the loop. I did this for all arithmetic operations that were being re-computed each time in the loop.</p>
 <p>Below is the timing comparison table between triangle rasterization with and without optimizations. Each value represents the time taken (in milliseconds) to rasterize tests 1-6 in svg/basic. For all tests, the rasterization time is lower when using optimizations, especially for tests 3 and 4. These times were determined by using clock() around svg.draw() in DrawRend::redraw() to determine time taken for svg.draw() to run.</p>
 
-<table>
+<table border="1">
   <tr>
     <th>Test</th>
     <th>Time Taken (No Optimization) in milliseconds</th>
@@ -93,42 +100,47 @@
 
 
 <h3 align="middle">Part 2: Antialiasing triangles</h3>
+<p>In Task 1, my algorithm consisted of a nested loop to iterate through each pixel in the bounding box. My supersampling algorithm adds another nested loop inside Task 1’s nested loop, allowing me to iterate through each sub-pixel within a pixel, obtain a supersample, and add that supersample to the sample buffer. Each pixel is split into sqrt(sample_rate) * sqrt(sample_rate) sub-pixels, and each supersample is the point at the center of a sub-pixel. The same 3-line point-in-triangle test from Task 1 is performed except this time using the supersampled x and y coordinates, which means the line tests help determine whether each sub-pixel should be filled in. The final color of a pixel is the average color of its supersamples.</p>
+<p>Supersampling is useful because it allows us to sample each pixel at more than just 1 point. Since a pixel can consist of multiple colors, sampling a pixel at multiple points makes the transition between shapes and colors more gradual and less harsh and sharp, thus reducing the appearance of jaggies and helping antialias triangles.</p>
+<p>The rasterization pipeline was modified because the size of sample_buffer was increased to width * height * sample_rate to allow for enough space to store sample_rate supersamples for each pixel. This means within a pixel (x, y), each supersample was stored at index sample_rate * (width * y + x) + sample_num in sample_buffer, where sample_num ranges from 0 to sample_rate-1 (inclusive) and represents each of the supersamples within the pixel. Another modification to the pipeline is that we first rasterized a higher-dimension image to the sample buffer, then downsampled by filling in each pixel with the average color of its supersamples, then drew to the frame buffer. I also changed fill_pixel to set all supersamples within a point or line to be the same color to prevent the window box from being antialiased.</p>
+<p>From the red triangle in test4.svg, we see that when sample rate is 1, the triangle corner looks disconnected with jagged and sharp edges. When sample rate is 4, the different components start becoming more connected, but the color transition between darker and lighter shades of red can still be harsh. When sample rate is 16, the corner looks more smoothly connected and blended together and less jagged. These results are observed because as sample rate increases, we're sampling each pixel at more points, which means we have a better grasp of what color each pixel should be, allowing pixels to blend more smoothly in with each other since each pixel is closer to the color they should be.</p>
 
-Grid-based Supersampling:
+Results from supersampling basic/test4.svg:
 <div align="middle">
 	<table style="width=100%">
 	  <tr>
 		<td>
 		  <img src="build/q2/test4_sr1.png" align="middle" width="400px"/>
-		  <figcaption align="middle">basic/test4.svg with sample rate 1.</figcaption>
+		  <figcaption align="middle">basic/test4.svg with sample rate 1</figcaption>
 		</td>
 		<td>
 		  <img src="build/q2/test4_sr4.png" align="middle" width="400px"/>
-		  <figcaption align="middle">basic/test4.svg with sample rate 4.</figcaption>
+		  <figcaption align="middle">basic/test4.svg with sample rate 4</figcaption>
 		</td>
 		<td>
 			<img src="build/q2/test4_sr16.png" align="middle" width="400px"/>
-			<figcaption align="middle">basic/test4.svg with sample rate 16.</figcaption>
+			<figcaption align="middle">basic/test4.svg with sample rate 16</figcaption>
 		</td>
 	  </tr>
 	</table>
 </div>
 
-<p><b>Extra Credit: </b>Jittering Sampling:</p>
+<p><b>Extra Credit: </b>Jittering Sampling</p>
+<p>An alternative antialiasing method I implemented is jittered sampling (results below). In both grid supersampling and jittered sampling, we split each pixel into sqrt(sample_rate) rows and sqrt(sample_rate) columns, thus creating sqrt(sample_rate) * sqrt(sample_rate) sub-pixels within each pixel. However, grid supersampling always samples each sub-pixel at its center, which means within a pixel, all the supersamples are evenly spaced out. Jittered sampling lets us randomly pick a point inside the sub-pixel to sample instead of always having to pick the point at the center of the sub-pixel, which means within a pixel, the supersamples aren’t evenly spaced out. Jittered sampling results in the pixels being more smoothly blended in with each other compared to grid-based. The transition of the different shades of red is also more gradual and less harsh using jittered sampling.</p>
 <div align="middle">
 	<table style="width=100%">
 	  <tr>
 		<td>
 			<img src="build/q2/ec_test4_sr1.png" align="middle" width="400px"/>
-			<figcaption align="middle">basic/test4.svg with sample rate 1.</figcaption>
+			<figcaption align="middle">basic/test4.svg with sample rate 1</figcaption>
 		  </td>
 		  <td>
 			<img src="build/q2/ec_test4_sr4.png" align="middle" width="400px"/>
-			<figcaption align="middle">basic/test4.svg with sample rate 4.</figcaption>
+			<figcaption align="middle">basic/test4.svg with sample rate 4</figcaption>
 		  </td>
 		  <td>
 			  <img src="build/q2/ec_test4_sr16.png" align="middle" width="400px"/>
-			  <figcaption align="middle">basic/test4.svg with sample rate 16.</figcaption>
+			  <figcaption align="middle">basic/test4.svg with sample rate 16</figcaption>
 		  </td>
 	  </tr>
 	</table>
@@ -140,14 +152,13 @@ Grid-based Supersampling:
     <tr>
       <td>
         <img src="build/q3/my_robot.png" align="middle" width="400px"/>
-        <figcaption align="middle">Updated version of svg/transforms/robot.svg where Cubeman is waving with his right arm. I also changed his colors to make it look like he's wearing a red T-shirt and blue pants.</figcaption>
+        <figcaption align="middle">Updated version of svg/transforms/robot.svg where Cubeman is waving his arm. I also changed his colors to make it look like he's wearing a red T-shirt and blue pants.</figcaption>
       </td>
     </tr>
   </table>
 </div>
 
-<p><b>Extra Credit:</b> An extra feature I added to my GUI is adding keyboard shortcuts (using two currently unused keys) to rotate the viewport. Pressing “A” rotates the viewport 90 degrees left (from the viewport’s current orientation), while pressing “D” rotates the viewport 90 degrees right.</p>
-
+<p><b>Extra Credit: </b>An extra feature I added to my GUI is adding keyboard shortcuts (using two currently unused keys) to rotate the viewport. Pressing “A” rotates the viewport 90 degrees left (from the viewport’s current orientation), while pressing “D” rotates the viewport 90 degrees right.</p>
 Result of pressing "A" to rotate viewport left:
 <div align="middle">
 	<table style="width=100%">
@@ -167,7 +178,7 @@ Result of pressing "A" to rotate viewport left:
 	  </tr>
 	</table>
 </div>
-Result of pressing "D" to rotate viewport left:
+Result of pressing "D" to rotate viewport right:
 <div align="middle">
 	<table style="width=100%">
 		<tr>
@@ -187,10 +198,12 @@ Result of pressing "D" to rotate viewport left:
 	</table>
 </div>
 
+<p>To implement the feature for “A”: I got the NDC corresponding to the current SVG using svg_to_ndc[current_svg]. An NDC is a 3x3 matrix, which means it can be translated and rotated. I translated the NDC matrix 500 units right by multiplying it by CGL::translate(500, 0). This was because the viewport can go out of bounds and get cut off the screen when it’s rotated if it’s not shifted right first. I then multiplied this result by CGL::rotate(90) to rotate the viewport 90 degrees left, and set this matrix to be the new NDC corresponding to the current SVG. The implementation for “D” was similar except translating down first, then rotating right.</p>
 
 <h2 align="middle">Section II: Sampling</h2>
 
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
+<p></p>
 <div align="middle">
   <table style="width=100%">
     <tr>

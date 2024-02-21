@@ -37,41 +37,23 @@
 <h2 align="middle">Section I: Rasterization</h2>
 
 <h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
-I find the min and max of the passed in x and y-coordinates to find the bounding box, then sample each pixel in the box.
+<p>rasterize_triangle takes in 3 pairs of x, y coordinates representing the vertices of a triangle. The bounding box is found by taking the min and max of these x and y values to find the smallest or tightest rectangle that bounds and contains the entire triangle. I also took the floor of the min x and y value, and the ceil of the max x and y value as each pixel’s corners are situated at whole numbers, not decimals. </p>
+
+<p>To rasterize triangles, I iterate through each pixel in the bounding box and use the 3-line point-in-triangle test to determine whether the pixel should be filled in based on whether the (x, y) point corresponding to that pixel falls inside or on the edge of the triangle. If it does, I fill the pixel in using the color passed into rasterize_triangle. Otherwise, I don’t fill the pixel in. The point corresponding to a pixel is always the point at the center of the pixel (i.e. if (x, y) is the point at the upper left corner of a pixel, (x+0.5, y+0.5) is used for that pixel when conducting the point-in-triangle test).</p>
+
+<p>Given a point (x, y) at the center of a pixel and 2 adjacent points (x0, y0) and (x1, y1), a line test is performed by computing -(x - x0) * (y1 - y0) + (y - y0) * (x1 - x0). After performing all 3 tests, if the outcome of all 3 tests is >= 0, or if the outcome of all 3 tests is <= 0, then the point is either inside or on the edge of the triangle and thus the pixel can be filled in. In lecture, we only filled the pixel in when the outcome of all 3 tests was > 0, but this was because the 3 triangle vertices were in a counterclockwise orientation. Since the triangle vertices can be passed into rasterize_triangle in either clockwise or counterclockwise order, as long as all 3 line test outcomes have the same sign or are equal to zero, the pixel can be filled in. We also include the = sign in our check because points on the edge of the triangle should be drawn.</p>
+
+<p>My algorithm is no worse than one that checks each sample within the bounding box of the triangle because it only iterates through and looks at pixels inside the bounding box.</p>
+
+
 <img src="build/q1/test4.png" align="middle" width="400px"/>
-<figcaption align="middle">Rendering of basic/test4.svg. Pixel inspector is centered on the left edge of the blue triangle, which shows how aliasing is present as there are jaggies. </figcaption>
+<figcaption align="middle">basic/test4.svg with the default viewing parameters. Pixel inspector is centered on the left edge of the blue triangle, which shows how aliasing is present as there are jaggies. </figcaption>
 
 <p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
 
-<div align="middle">
-  <table style="width=100%">
-    <tr>
-      <td>
-        <img src="images/image1.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
-      <td>
-        <img src="images/image2.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
-    </tr>
-    <br>
-    <tr>
-      <td>
-        <img src="images/image3.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
-      <td>
-        <img src="images/image4.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
-    </tr>
-  </table>
-</div>
-
-<p>Extra Credit: One optimization I made to speed up rasterization is using barycentric coordinates instead of the 3-line triangle-in-point test to determine if a point falls inside the triangle. In the triangle-in-point test, since the coordinates could be passed in in clockwise or counterclockwise order, we have to do 2 checks to determine if the point is inside the triangle: (1) checking that all 3 lines are >= 0 or (2) checking that all 3 lines are <= 0. However, with barycentric coordinates, we just have to do 1 check (checking that `alpha`, `beta`, and `gamma` are all >= 0) to determine if the point is inside the triangle, which reduces rasterization time.</p>
-<p>Another optimization I made is factoring out redundant arithmetic operations from loops. For example, each time we go through the innermost loop, we calculate `y2 - y1`. Thus, I calculated the result of `y2 - y1` outside the loop, and used the result directly in the loop to prevent having to re-compute `y2 - y1` each time we go through the loop. I did this for all arithmetic operations that were being re-computed each time in the loop.</p>
-<p>Below is the timing comparison table between triangle rasterization with and without optimizations. Each value represents the time taken (in milliseconds) to rasterize tests 1-6 in svg/basic. For all tests, the rasterization time is lower when using optimizations, especially for tests 3 and 4. These times were determined by using `clock()` around `svg.draw()` in `DrawRend::redraw()` to determine time taken for `svg.draw()` to run.</p>
+<p><b>Extra Credit</b>One optimization I made to speed up rasterization is using barycentric coordinates instead of the 3-line triangle-in-point test to determine if a point falls inside the triangle. In the triangle-in-point test, since the coordinates could be passed into rasterize_triangle in clockwise or counterclockwise order, we have to do 2 checks to determine if the point is inside the triangle: (1) checking that all 3 lines are >= 0 or (2) checking that all 3 lines are <= 0. However, with barycentric coordinates, we just have to do 1 check (checking that alpha, beta, and gamma are all >= 0) to determine if the point is inside the triangle, which reduces rasterization time.</p>
+<p>Another optimization I made is factoring out redundant arithmetic operations from loops. For example, each time we go through the innermost loop, we calculate y2 - y1. Thus, I calculated the result of y2 - y1 outside the loop, and used the result directly in the loop to prevent having to re-compute y2 - y1 each time we go through the loop. I did this for all arithmetic operations that were being re-computed each time in the loop.</p>
+<p>Below is the timing comparison table between triangle rasterization with and without optimizations. Each value represents the time taken (in milliseconds) to rasterize tests 1-6 in svg/basic. For all tests, the rasterization time is lower when using optimizations, especially for tests 3 and 4. These times were determined by using clock() around svg.draw() in DrawRend::redraw() to determine time taken for svg.draw() to run.</p>
 
 <table>
   <tr>
@@ -114,8 +96,45 @@ I find the min and max of the passed in x and y-coordinates to find the bounding
 
 <h3 align="middle">Part 2: Antialiasing triangles</h3>
 
-<p>Extra Credit:  </p>
+Grid-based Supersampling:
+<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+		  <img src="build/q2/test4_sr1.png" align="middle" width="400px"/>
+		  <figcaption align="middle">basic/test4.svg with sample rate 1.</figcaption>
+		</td>
+		<td>
+		  <img src="build/q2/test4_sr4.png" align="middle" width="400px"/>
+		  <figcaption align="middle">basic/test4.svg with sample rate 4.</figcaption>
+		</td>
+		<td>
+			<img src="build/q2/test4_sr16.png" align="middle" width="400px"/>
+			<figcaption align="middle">basic/test4.svg with sample rate 16.</figcaption>
+		</td>
+	  </tr>
+	</table>
+</div>
 
+<p><b>Extra Credit:</b>Jittering Sampling:</p>
+<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+			<img src="build/q2/ec_test4_sr1.png" align="middle" width="400px"/>
+			<figcaption align="middle">basic/test4.svg with sample rate 1.</figcaption>
+		  </td>
+		  <td>
+			<img src="build/q2/ec_test4_sr4.png" align="middle" width="400px"/>
+			<figcaption align="middle">basic/test4.svg with sample rate 4.</figcaption>
+		  </td>
+		  <td>
+			  <img src="build/q2/ec_test4_sr16.png" align="middle" width="400px"/>
+			  <figcaption align="middle">basic/test4.svg with sample rate 16.</figcaption>
+		  </td>
+	  </tr>
+	</table>
+</div>
 
 <h3 align="middle">Part 3: Transforms</h3>
 <div align="middle">
@@ -123,43 +142,48 @@ I find the min and max of the passed in x and y-coordinates to find the bounding
     <tr>
       <td>
         <img src="build/q3/my_robot.png" align="middle" width="200px"/>
-        <figcaption align="middle">png screenshot of updated version of svg/transforms/robot.svg where Cubeman is waving with his right arm. I also changed his colors to make it look like he's wearing a red T-shirt and blue pants.</figcaption>
+        <figcaption align="middle">Updated version of svg/transforms/robot.svg where Cubeman is waving with his right arm. I also changed his colors to make it look like he's wearing a red T-shirt and blue pants.</figcaption>
       </td>
     </tr>
   </table>
 </div>
 
-<p>Extra Credit: An extra feature I added to my GUI is adding keyboard shortcuts (using two currently unused keys) to rotate the viewport. Pressing “A” rotates the viewport 90 degrees left (from the viewport’s current orientation), while pressing “D” rotates the viewport 90 degrees right.</p>
-<p>Result of pressing "A" to rotate viewport left:</p>
-<div class="row">
-  <div class="column">
-    <img src="build/q3/my_robot.png" style="width:100%">
+<p><b>Extra Credit:</b> An extra feature I added to my GUI is adding keyboard shortcuts (using two currently unused keys) to rotate the viewport. Pressing “A” rotates the viewport 90 degrees left (from the viewport’s current orientation), while pressing “D” rotates the viewport 90 degrees right.</p>
+
+<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+		  <img src="build/q3/my_robot.png" align="middle" width="400px"/>
+		  <figcaption align="middle">Result of pressing "A" to rotate viewport left.</figcaption>
+		</td>
+		<td>
+		  <img src="build/q3/my_robot_left90.png" align="middle" width="400px"/>
+		</td>
+		<td>
+			<img src="build/q3/my_robot_left90_2.png" align="middle" width="400px"/>
+		</td>
+		<td>
+			<img src="build/q3/my_robot_left90_3.png" align="middle" width="400px"/>
+		</td>
+	  </tr>
+	  <br>
+	  <td>
+		<img src="build/q3/my_robot_2.png" align="middle" width="400px"/>
+		<figcaption align="middle">Result of pressing "D" to rotate viewport right.</figcaption>
+	  </td>
+	  <td>
+		<img src="build/q3/my_robot_right90.png" align="middle" width="400px"/>
+	  </td>
+	  <td>
+		  <img src="build/q3/my_robot_right90_2.png" align="middle" width="400px"/>
+	  </td>
+	  <td>
+		  <img src="build/q3/my_robot_right90_3.png" align="middle" width="400px"/>
+	  </td>
+	</table>
   </div>
-  <div class="column">
-    <img src="build/q3/my_robot_left90.png" style="width:100%">
-  </div>
-  <div class="column">
-    <img src="build/q3/my_robot_left90_2.png" style="width:100%">
-  </div>
-  <div class="column">
-    <img src="build/q3/my_robot_left90_3.png" style="width:100%">
-  </div>
-</div>
-<p>Result of pressing "D" to rotate right:</p>
-<div class="row">
-  <div class="column">
-    <img src="build/q3/my_robot_2.png" style="width:100%">
-  </div>
-  <div class="column">
-    <img src="build/q3/my_robot_right90.png" style="width:100%">
-  </div>
-  <div class="column">
-    <img src="build/q3/my_robot_right90_2.png" style="width:100%">
-  </div>
-  <div class="column">
-    <img src="build/q3/my_robot_right90_3.png" style="width:100%">
-  </div>
-</div>
+
 
 <h2 align="middle">Section II: Sampling</h2>
 
@@ -169,11 +193,11 @@ I find the min and max of the passed in x and y-coordinates to find the bounding
     <tr>
       <td>
         <img src="build/q4/svg_triangle.png" align="middle" width="400px"/>
-        <figcaption align="middle">png screenshot of a svg triangle with 1 red, 1 green, and 1 blue vertex. The triangle is smoothly blended.</figcaption>
+        <figcaption align="middle">svg triangle with 1 red, 1 green, and 1 blue vertex. The triangle is smoothly blended.</figcaption>
       </td>
       <td>
         <img src="build/q4/test7.png" align="middle" width="400px"/>
-        <figcaption align="middle">png screenshot of svg/basic/test7.svg with default viewing parameters and sample rate 1.</figcaption>
+        <figcaption align="middle">svg/basic/test7.svg with default viewing parameters and sample rate 1.</figcaption>
       </td>
     </tr>
   </table>
@@ -181,8 +205,60 @@ I find the min and max of the passed in x and y-coordinates to find the bounding
 
 <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
 
+An example where bilinear sampling defeats nearest sampling can be seen in texmap/test2.svg. 
+<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+		  <img src="build/q5/nearest_sr1.png" align="middle" width="400px"/>
+		  <figcaption align="middle">nearest sampling with sample rate 1.</figcaption>
+		</td>
+		<td>
+		  <img src="build/q5/bilinear_sr1.png" align="middle" width="400px"/>
+		  <figcaption align="middle">bilinear sampling with sample rate 1.</figcaption>
+		</td>
+	  </tr>
+	  <br>
+	  <tr>
+		<td>
+		  <img src="build/q5/nearest_sr16.png" align="middle" width="400px"/>
+		  <figcaption align="middle">nearest sampling with sample rate 16.</figcaption>
+		</td>
+		<td>
+		  <img src="build/q5/bilinear_sr16.png" align="middle" width="400px"/>
+		  <figcaption align="middle">bilinear sampling with sample rate 16.</figcaption>
+		</td>
+	  </tr>
+	</table>
+  </div>
 
 <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+
+<div align="middle">
+	<table style="width=100%">
+	  <tr>
+		<td>
+		  <img src="build/q6/Lzero_Pnearest.png" align="middle" width="400px"/>
+		  <figcaption align="middle">L_ZERO and P_NEAREST.</figcaption>
+		</td>
+		<td>
+		  <img src="build/q6/Lzero_Plinear.png" align="middle" width="400px"/>
+		  <figcaption align="middle">bL_ZERO and P_LINEAR.</figcaption>
+		</td>
+	  </tr>
+	  <br>
+	  <tr>
+		<td>
+		  <img src="build/q6/Lnearest_Pnearest.png" align="middle" width="400px"/>
+		  <figcaption align="middle">L_NEAREST and P_NEAREST.</figcaption>
+		</td>
+		<td>
+		  <img src="build/q6/Lnearest_Plinear.png" align="middle" width="400px"/>
+		  <figcaption align="middle">L_NEAREST and P_LINEAR.</figcaption>
+		</td>
+	  </tr>
+	</table>
+  </div>
 
 <p>Extra Credit:</p>
 

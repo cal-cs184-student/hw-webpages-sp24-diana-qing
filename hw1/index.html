@@ -257,7 +257,7 @@ Result of pressing "D" to rotate viewport right:
 	When lsm is L_ZERO, the mipmap level is 0. When lsm is L_NEAREST, we get the mipmap level by calling get_level() and rounding down the result (since we can’t sample at a level that isn’t a whole number). When lsm is L_LINEAR, we need to sample at 2 levels. The first level we sample at is the floor of the level returned by get_level() , and the other level we sample at is 1 + the floor. The final color of the pixel is thus a weighted sum between the levels and the color returned from pixel sampling.
 	</p>
 <p>In terms of speed, supersampling can be slow as the sample rate increases because we have to sample more points per pixel. Pixel sampling may be faster than level sampling as we don’t have to interpolate across mipmap levels when using pixel sampling. Level sampling requires more memory usage than pixel sampling as we have to store mipmaps at various levels whereas pixel sampling only uses one level. Increasing the number of samples per pixel can also lead to more memory usage as we have to store more supersamples. Antialiasing power is weaker for point sampling as it’s subject to moire patterns and jaggies. Antialiasing power may be stronger when sample rate is very high as we’re sampling more points per pixel, which reduces the moire effect and jaggies. Level sampling can also reduce the appearance of jaggies and the moire effect, but may result in over blurring.</p>
-<p>In the following images, we see how </p>
+<p>In the following images, the L_NEAREST images look smoother and the edges seem less sharp compared to the L_ZERO images.</p>
 <div align="middle">
 	<table style="width=100%">
 	  <tr>

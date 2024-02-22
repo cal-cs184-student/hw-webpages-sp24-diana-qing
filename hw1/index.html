@@ -32,7 +32,7 @@
 <div>
 <p>Webpage: https://cal-cs184-student.github.io/hw-webpages-sp24-diana-qing/</p>
 <h2 align="middle">Overview</h2>
-<p>In this homework, I built a rasterizer that can supersample images to reduce aliasing, perform transformations to rotate or translate polygons, and map textures using different sampling methods at various mipmap levels. Something interesting I learned is how there are many different ways to sample images, and each sampling method has its pros and cons as they differ in complexity, time, and quality of the rasterized image. Another interesting thing I learned is how to create my own svg files by just specifying coordinates and colors.</p>
+<p>In this homework, I built a rasterizer that can supersample images to reduce aliasing, perform transformations like rotations and translations, and map textures using different sampling methods at various mipmap levels. Something interesting I learned is how there are many different ways to sample images, and each sampling method has its pros and cons as they differ in complexity, time, and quality of the rasterized image. Another interesting thing I learned is how to create my own svg files by just specifying coordinates and colors.</p>
 
 <h2 align="middle">Section I: Rasterization</h2>
 
@@ -251,7 +251,13 @@ Result of pressing "D" to rotate viewport right:
   </div>
 
 <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
-
+<p>Level sampling refers to sampling images at different resolutions, where level 0 is the highest resolution of the image. It allows us to interpolate between pixels of a level or interpolate between pixels of different mipmap levels so that we can take into account how far away objects are from the viewer when we rasterize the object. Closer objects should be more clear and thus should be sampled at a higher resolution.</p>
+<p>Building off my Task 5 implementation, I additionally found the (u,v) texture coordinates corresponding to the screen space pixels (x+1, y) and (x, y+1) using the same method as in Task 4 and 5. Then I sampled based on the specified pixel sampling method (psm) and level sampling method (lsm) to get the color for (x, y).</p>
+<p>To perform nearest or bilinear sampling, I used my existing implementation of these sampling functions from Task 5. To get the mipmap level to sample at, in Texture::get_level(), I used the formulas found in lecture. I found (du/dx, dv/dx) by subtracting sp.p_dx_uv and sp.p_uv, then found (du/dy, dv/dy) by subtracting sp.p_dy_uv and sp.p_uv. Then I computed L using the equation from lecture, then found the mipmap level D by taking log2(L). I also clamped the level to be between 0 and mipmap.size()-1 to ensure the levels we were sampling from were within bounds. 
+	When lsm is L_ZERO, the mipmap level is 0. When lsm is L_NEAREST, we get the mipmap level by calling get_level() and rounding down the result (since we can’t sample at a level that isn’t a whole number). When lsm is L_LINEAR, we need to sample at 2 levels. The first level we sample at is the floor of the level returned by get_level() , and the other level we sample at is 1 + the floor. The final color of the pixel is thus a weighted sum between the levels and the color returned from pixel sampling.
+	</p>
+<p>In terms of speed, supersampling can be slow as the sample rate increases because we have to sample more points per pixel. Pixel sampling may be faster than level sampling as we don’t have to interpolate across mipmap levels when using pixel sampling. Level sampling requires more memory usage than pixel sampling as we have to store mipmaps at various levels whereas pixel sampling only uses one level. Increasing the number of samples per pixel can also lead to more memory usage as we have to store more supersamples. Antialiasing power is weaker for point sampling as it’s subject to moire patterns and jaggies. Antialiasing power may be stronger when sample rate is very high as we’re sampling more points per pixel, which reduces the moire effect and jaggies. Level sampling can also reduce the appearance of jaggies and the moire effect, but may result in over blurring.</p>
+<p>In the following images, we see how </p>
 <div align="middle">
 	<table style="width=100%">
 	  <tr>
@@ -261,7 +267,7 @@ Result of pressing "D" to rotate viewport right:
 		</td>
 		<td>
 		  <img src="build/q6/Lzero_Plinear.png" align="middle" width="400px"/>
-		  <figcaption align="middle">bL_ZERO and P_LINEAR</figcaption>
+		  <figcaption align="middle">L_ZERO and P_LINEAR</figcaption>
 		</td>
 	  </tr>
 	  <br>

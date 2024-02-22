@@ -203,7 +203,7 @@ Result of pressing "D" to rotate viewport right:
 <h2 align="middle">Section II: Sampling</h2>
 
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
-<p>Barycentric coordinates are a system where coordinates are defined by 3 values: alpha, beta, and gamma. They allow us to linearly interpolate values across a triangle. For example, the svg triangle below has 1 red, 1 blue, and 1 green vertex. It’s smoothly blended because the vertex colors were linearly interpolated across the triangle as the color corresponding to a point in the triangle can be understood as a weighted sum between the 3 vertices of the triangle and the weights alpha, beta, and gamma. Let’s say the red vertex corresponds to A, blue vertex corresponds to B, and the green vertex corresponds to C. For some point (x, y) inside the triangle, (x, y) = alpha*A + beta*B + gamma*C. If (x, y) is situated on vertex A, then we know (alpha, beta, gamma) = (1, 0, 0), which means (x, y) = A and thus (x, y) is red. Instead of color, we can also linearly interpolate other values like texture. Another property of barycentric coordinates is that alpha, beta, and gamma sum to 1. This makes barycentric coordinates helpful for determining whether a point lies in the triangle because if any of alpha, beta, or gamma is < 0, then we know the point lies outside the triangle.</p>
+<p>Barycentric coordinates are a system where coordinates are defined by 3 values: alpha, beta, and gamma. They allow us to linearly interpolate values across a triangle. For example, the svg triangle below has 1 red, 1 blue, and 1 green vertex. It’s smoothly blended because the vertex colors were linearly interpolated across the triangle as the color corresponding to a point in the triangle can be understood as a weighted sum between the 3 vertices of the triangle (which are colors in this case) and the weights alpha, beta, and gamma. Let’s say the red vertex corresponds to A, blue vertex corresponds to B, and the green vertex corresponds to C. For some point (x, y) inside or on the edge of the triangle, (x, y) = alpha*A + beta*B + gamma*C. If (x, y) is situated on vertex A, then we know (alpha, beta, gamma) = (1, 0, 0), which means (x, y) = A and thus (x, y) is red. Instead of color, we can also linearly interpolate other values like texture. Another property of barycentric coordinates is that alpha, beta, and gamma sum to 1. This makes barycentric coordinates helpful for determining whether a point lies in the triangle because if any of alpha, beta, or gamma is < 0, then we know the point lies outside the triangle.</p>
 <div align="middle">
   <table style="width=100%">
     <tr>
@@ -220,8 +220,10 @@ Result of pressing "D" to rotate viewport right:
 </div>
 
 <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
-
-An example where bilinear sampling defeats nearest sampling can be seen in texmap/test2.svg. 
+<p>Pixel sampling refers to using nearby pixels in the texture to determine what color to fill in a pixel. I implemented pixel sampling by building off my Task 4 implementation where I found the barycentric coordinates corresponding to some screen space point (x, y). I computed the texture space coordinate (u, v) as a weighted sum between alpha, beta, and gamma and the passed in u, v values (which are the texture coordinates of the triangle’s vertices). Then I used nearest or bilinear sampling to get the color corresponding to the point.</p>
+<p>Regardless of the sampling method, we first scale up the coordinates by the width-1 and height-1 of the mipmap. In nearest sampling, we round the scaled up (u, v) coordinates and find the point that’s closest to (u, v). Then we use the texel of the closest point to set (u, v)’s color.</p>
+<p>In bilinear sampling, we get the 4 closest points to the scaled up (u, v) coordinates by floor-ing and ceil-ing the u, v coordinate, then get the texel for each of these 4 closest points. Then we perform bilinear interpolation 3 times (twice horizontally and once vertically) to get (u, v)’s color.</p>
+<p>An example where bilinear sampling defeats nearest sampling can be seen in texmap/test2.svg. At sample rate 1, the white lines (which probably represent latitude and longitude lines) are disconnected and jagged when using nearest sampling, but look slightly more connected and begin blending together when using bilinear sampling. At sample rate 16, the lines are more connected and blended together when using nearest sampling, and the staircase-like shapes look less harsh compared to sample rate 1 bilinear sampling but are still prominent. At sample rate 16, when using bilinear sampling, the line looks more smoothly connected and less jagged compared to nearest sampling. There will be a large difference between the two methods when there are lots of details in both directions. Nearest sampling only considers the closest point while bilinear looks at the 4 closest surrounding points and interpolates them, which is why the transition between pixels looks smoother and more gradual when using bilinear sampling.</p>
 <div align="middle">
 	<table style="width=100%">
 	  <tr>
@@ -275,8 +277,6 @@ An example where bilinear sampling defeats nearest sampling can be seen in texma
 	  </tr>
 	</table>
   </div>
-
-<p>Extra Credit:</p>
 
 <h2 align="middle">Section III: Art Competition</h2>
 <p>If you are not participating in the optional art competition, don't worry about this section!</p>

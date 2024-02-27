@@ -159,7 +159,7 @@
   Show a screenshot of bez/teapot.bez (not .dae) evaluated by your implementation.
 </b>
 <div align="middle">
-	<img src="images/q2/teapot_closer_up.png" align="middle" width="85%">
+	<img src="images/q2/teapot_closer_up.png" align="middle" width="90%">
 	<figcaption>bez/teapot.bez</figcaption>
 </div>
 <br>
@@ -332,8 +332,40 @@
     If you have implemented support for boundary edges, show screenshots of your implementation properly handling split operations on boundary edges.
 </b>
 <p>
-    YOUR RESPONSE GOES HERE
+	I split boundary edges similarly to how I split non-boundary edges. I drew a diagram labeling every mesh element that exists before and after 
+	splitting, allowing me to see how each element should be updated after splitting and what new elements needed to be created. Instead of turning 2
+	faces into 4 faces, when splitting boundary edges, we just turn 1 face into 2 faces. Thus, the new elements created from splitting a boundary are: 
+	1 new vertex (m), 2 new edges (am and mc), 1 new face (triangle amc), and 4 new half-edges (h6, h7, h8, h9).
 </p>
+<div align="middle">
+	<img src="images/q5/ec/boundary_edge_split_diagram.png" align="middle" width="90%">
+	<figcaption>Diagram labeling mesh elements before and after splitting a boundary edge</figcaption>
+</div>
+<p>
+	Before splitting, for the half-edges associated with the boundary edge (h0 and h1), it's also important to indicate which edge is inside the 
+	triangle face versus which is in the boundary face. For the edge e0 passed into the splitEdge function, I check if e0->halfedge is in the boundary. 
+	If it's not, I set halfedge h0 to be e0->halfedge->twin since I always want h0 to be the halfedge associated with the boundary edge that's in the 
+	boundary as that's how it's labeled in my diagram. Then I can set all the other mesh elements based on h0.
+
+	Below are images of beetle.dae before any boundary edge splits and after splitting some boundary edges (and also some non-boundary edges to ensure that
+	splitting both boundary and non-boundary edges work). 
+</p>
+<br>
+<div align="middle">
+	<table style="width:100%">
+	  <tr align="center">
+		<td>
+		  <img src="images/q5/ec/beetle_orig.png" align="middle" width="600px"/>
+		  <figcaption>Beetle before boundary edge splits</figcaption>
+		</td>
+		<td>
+		  <img src="images/q5/ec/beetle_with_boundary_edge_splits.png" align="middle" width="600px"/>
+		  <figcaption>Beetle after splitting some boundary edges (and some non-boundary edge splits). The boundary edges I split are the edges at the bottom of the front of car.</figcaption>
+		</td>
+	  </tr>
+	  <br>
+	</table>
+</div>
 <br>
 
 

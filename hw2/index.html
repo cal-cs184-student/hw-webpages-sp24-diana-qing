@@ -198,14 +198,24 @@
   Briefly explain how you implemented the edge flip operation and describe any interesting implementation / debugging tricks you have used.
 </b>
 <p>
-    I implemented edge flips by closely following the instructions in the spec and drawing a detailed diagram labeling each mesh element 
-	(vertex, edge, face, and half-edge) before and after flipping, which allowed me to keep track of exactly what updates needed to be made
-	to each mesh element.
+    I implemented edge flips by closely following the instructions in the spec. I began by listing every mesh element (vertex, edge, face, 
+	and half-edge) that exists before and after flipping and defined the mesh elements in relation to each another. Then I went through each 
+	mesh element and updated its pointers to reflect its relationship to other mesh elements after the flipping operation takes place. 
+	Flipping an edge doesn't create any new elements, so the majority of the work after flipping an edge was to update pointers.
+</p>
+<p>
+	An implementation trick I used is drawing a detailed diagram labeling each mesh element that exists before and after flipping, which 
+	allowed me to keep track of exactly what updates needed to be made to the pointers of each mesh element. It also makes it clear what 
+	the relationship between mesh elements are, and I could directly translate these relationships into code, which was what the bulk of the
+	coding for this task consisted of. From the diagram below, we can see that when we flip edge bc, the main changes that get made are
+	(1) the orientation of faces f0 and f1 change, (2) edge e0 now connects vertices a and d instead of vertices b and c, and (3) the 
+	orientation of halfedges h0 and h3 is now horizontal instead of vertical because the edge they are associated with (e0) has changed to
+	be horizontally oriented.
 </p>
 <br>
 <div align="middle">
 	<img src="images/q4/edge_flip_diagram.png" align="middle" width="85%">
-	<figcaption>Diagram labeling mesh elements before and after edge flip</figcaption>
+	<figcaption>Diagram labeling mesh elements before and after flipping edge e0. Before being flipped, e0 connects vertices b and c, but after being flipped, e0 connects vertices a and d</figcaption>
 </div>
 <br>
 
@@ -245,9 +255,9 @@
     Write about your eventful debugging journey, if you have experienced one.
 </b>
 <p>
-    Fortunately, I didn't experience an eventful debugging journey since I was able to get my edge flipping to work by following the 
-	guidelines in the spec and drawing a detailed diagram labeling each mesh element (vertex, edge, face, and half-edge) before and after 
-	flipping so I knew exactly what updates had to made to each mesh element.
+    Fortunately, I didn't experience an eventful debugging journey since I was able to get my edge flipping to work on the first try by 
+	closely following the guidelines in the spec and drawing a detailed diagram labeling every mesh element before and after 
+	flipping so I knew exactly what updates had to made to the pointers of each mesh element.
 </p>
 <br>
 
@@ -352,12 +362,12 @@
 </p>
 <br>
 <div align="middle">
-	<img src="images/q5/ec/beetle_orig.png" align="middle" width="600px"/>
+	<img src="images/q5/ec/beetle_orig.png" align="middle" width="700px"/>
 	<figcaption>Beetle before any boundary edge splits</figcaption>
 </div>
 
 <div align="middle">
-	<img src="images/q5/ec/beetle_with_boundary_edge_splits.png" align="middle" width="600px"/>
+	<img src="images/q5/ec/beetle_with_boundary_edge_splits.png" align="middle" width="700px"/>
 	<figcaption>Beetle after splitting some boundary edges (and splitting some non-boundary edges). The boundary edges I split are the edges at the bottom of the front of car.</figcaption>
 </div>
 <br>

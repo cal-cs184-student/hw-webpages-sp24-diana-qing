@@ -75,7 +75,7 @@
 	Starting with n control points, de Casteljau's algorithm uses linear interpolation to find the n-1 intermediate control points. In the next step, it linearly interpolates these n-1 intermediate 
 	control points to find the next n-2 intermediate points. In BezierCurve::evaluateStep(), we only need to go through one step of de Casteljau's. Thus, I iterated through the n points 
 	passed into the function. On iteration i, where i is between 0 and points.size()-1 (inclusive), I linearly interpolated points p_i = points.at(i) and p_{i+1} = points.at(i+1) by computing 
-	lerp(p_i, p_{i+1}, t) or (1 - t) * p_i + t * p_{i+1}. This gave me the intermediate control point between p_i and p_{i+1}. I stored the lerp result in a 1D vector called intermediate_control_pts,
+	lerp(p_i, p_{i+1}, t) = (1 - t) * p_i + t * p_{i+1}. This gave me the intermediate control point between p_i and p_{i+1}. I stored the lerp result in a 1D vector called intermediate_control_pts,
 	then incremented i by 1, and repeated the process. At the end, I returned intermediate_control_pts from the function because it contains the n-1 intermediate control points.
 </p>
 <br>
@@ -155,13 +155,25 @@
   Briefly explain how de Casteljau algorithm extends to Bezier surfaces and how you implemented it in order to evaluate Bezier surfaces.
 </b>
 <p>
-    de Casteljau's algorithm extends to Bezier surfaces because instead of only having 1 Bezier curve, we now have multiple curves, each of which we perform de Casteljau's algorithm on 
-	to ultimately end up with 1 final point for each curve. Then we perform 1 final step of de Casteljau's on these final points to find the curve that connects these  
-	. For each curve, the process of performing de Casteljau's is the 
-	same as in Part 1 (i.e. given ), which means we can reuse our BezierCurve::evaluateStep() function from Part 1 to find the final point for each Bezier curve.
+    de Casteljau's algorithm extends to Bezier surfaces because instead of only having 1 curve, we now have multiple curves (let's say n), each of which we perform de Casteljau's algorithm on 
+	to ultimately end up with 1 final point for each curve. Then we perform de Casteljau's again on these n final points to obtain 
 </p>
 <p>
-    
+	For each curve, the process of performing de Casteljau's is the same as in Part 1 (i.e. given n original control points, we keep recursively using linear interpolation to find intermediate 
+	control points until we end up with 1 final point). Thus, given n control points, each step of de Casteljau's algorithm consists of using linear interpolation to find the n-1 intermediate 
+	control points, which is what my BezierCurve::evaluateStep() function from Part 1 does. Thus, my code for BezierPatch::evaluateStep() is identical to my code in BezierCurve::evaluateStep(), 
+	except now each point is a Vector3D instead of a Vector2D.
+</p>
+<p>
+    BezierPatch::evaluate1D() will keep performing each step of de Casteljau's until the algorithm converges and finds the 1 final point. Thus, I used a while loop to keep calling 
+	BezierPatch::evaluateStep() until evaluateStep() returned only 1 point, which indicates that de Casteljau's converged. This 1 point is what evaluate1D returns. Each time evaluateStep() is 
+	called, I pass in the points that the previous call to evaluateStep() returned because these points represent the next intermediate control points that we want to linearly interpolate.
+</p>
+<p>
+    controlPoints is a nxn grid of control points, where each row contains the control points for 1 curve. Thus, I iterate through each row of controlPoints and call BezierPatch::evaluate1D() on 
+	each row and the parameter u to find the 1 final point for each curve. I stored the final control points for each curve in a 1D vector called final_pt_for_all_curves. After obtaining the 
+	final point for each row of points in controlPoints, I call evaluate1D() one last time on the points in final_pt_for_all_curves and the parameter v to obtain the final interpolated point 
+	for the Bezier surface.
 </p>
 <br>
 
@@ -211,7 +223,7 @@
 <p>
     I implemented edge flips by closely following the instructions in the spec. I began by listing every mesh element (vertex, edge, face, 
 	and half-edge) that exists before and after flipping and defined the mesh elements in relation to each another. Given that the input
-	edge is the edge being flipped, we can define each element based on it's relationship to this edge's halfedges. Then I went through 
+	edge e0 is the edge being flipped, we can define each element based on it's relationship to e0's halfedges. Then I went through 
 	each mesh element and updated its pointers to reflect its relationship to other mesh elements after the flipping operation takes place. 
 	Flipping an edge doesn't create any new elements, so the majority of the work after flipping an edge was to update pointers.
 </p>
@@ -219,7 +231,7 @@
 	An implementation trick I used is drawing a detailed diagram labeling each mesh element that exists before and after flipping, which 
 	allowed me to keep track of exactly what updates needed to be made to the pointers of each mesh element. It also makes it clear what 
 	the relationship between mesh elements are (both before and after flipping), and I could directly translate these relationships into code, 
-	which was what the bulk of the coding for this task consisted of. From the diagram below, we can see that when we flip edge bc, the 
+	which was what the bulk of the coding for this task consisted of. From the diagram below, we can see that when we flip edge e0, the 
 	main changes that get made are (1) the orientation of faces f0 and f1 change, (2) edge e0 now connects vertices a and d instead of vertices 
 	b and c, and (3) the orientation of halfedges h0 and h3 is now horizontal instead of vertical because the edge they are associated with 
 	(e0) has changed to be horizontally oriented.
@@ -227,7 +239,7 @@
 <br>
 <div align="middle">
 	<img src="images/q4/edge_flip_diagram.png" align="middle" width="85%">
-	<figcaption>Diagram labeling mesh elements before and after flipping edge e0. Before being flipped, e0 connects vertices b and c, but after being flipped, e0 connects vertices a and d</figcaption>
+	<figcaption>Diagram labeling mesh elements before and after flipping edge e0. Before being flipped, e0 connects vertices b and c, but after being flipped, e0 connects vertices a and d.</figcaption>
 </div>
 <br>
 
@@ -270,7 +282,7 @@
     I didn't experience an eventful debugging journey since I was able to get my edge flips to work on the first try by 
 	closely following the guidelines in the spec and drawing a detailed diagram labeling every mesh element before and after 
 	flipping so I knew exactly what updates had to made to the pointers of each mesh element. Essentially, I translated the
-	relationships between mesh elements in my diagram into code, which helped prevent errors.
+	relationships between mesh elements in my diagram into code, which prevented errors.
 </p>
 <br>
 

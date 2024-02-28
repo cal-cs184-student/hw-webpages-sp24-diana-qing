@@ -68,10 +68,15 @@
   Briefly explain de Casteljau's algorithm and how you implemented it in order to evaluate Bezier curves.
 </b>
 <p>
-    Given n original control points, de Casteljau's algorithm allows us to create a smooth Bezier curve that connects the leftmost and rightmost original control points. From the 
-	
-	allows us to obtain a new set of n-1 control points
-	from the
+    Given n control points, de Casteljau's algorithm allows us to recursively use linear interpolation to find intermediate control points until there's only 1 point remaining, resulting in a 
+	smooth Bezier curve connecting this 1 final point to the leftmost and rightmost original control points. The algorithm also includes a parameter t, which is a value between 0 and 1, that controls .
+</p>
+<p>
+	Starting with n control points, de Casteljau's algorithm uses linear interpolation to find the n-1 intermediate control points. In the next step, it linearly interpolates these n-1 intermediate 
+	control points to find the next n-2 intermediate points. In BezierCurve::evaluateStep(), we only need to go through one step of de Casteljau's. Thus, I iterated through the n points 
+	passed into the function. On iteration i, where i is between 0 and points.size()-1 (inclusive), I linearly interpolated points p_i = points.at(i) and p_{i+1} = points.at(i+1) by computing 
+	lerp(p_i, p_{i+1}, t) or (1 - t) * p_i + t * p_{i+1}. This gave me the intermediate control point between p_i and p_{i+1}. I stored the lerp result in a 1D vector called intermediate_control_pts,
+	then incremented i by 1, and repeated the process. At the end, I returned intermediate_control_pts from the function because it contains the n-1 intermediate control points.
 </p>
 <br>
 
@@ -85,7 +90,7 @@
 <!-- Example of including a single figure -->
 <div align="middle">
   <img src="images/q1/step1.png" align="middle" width="50%">
-  <figcaption>6 control points in curve3.bzc</figcaption>
+  <figcaption>6 original control points in curve3.bzc</figcaption>
 </div>
 <br>
 
@@ -98,29 +103,29 @@
     <tr align="center">
       <td>
         <img src="images/q1/step2.png" align="middle" width="500px"/>
-        <figcaption>Level 0</figcaption>
+        <figcaption>Step 1</figcaption>
       </td>
       <td>
         <img src="images/q1/step3.png" align="middle" width="500px"/>
-        <figcaption>Level 1</figcaption>
+        <figcaption>Step 2</figcaption>
       </td>
     </tr>
     <br>
     <tr align="center">
       <td>
         <img src="images/q1/step4.png" align="middle" width="500px"/>
-        <figcaption>Level 2</figcaption>
+        <figcaption>Step 3</figcaption>
       </td>
       <td>
         <img src="images/q1/step5.png" align="middle" width="500px"/>
-        <figcaption>Level 3</figcaption>
+        <figcaption>Step 4</figcaption>
       </td>
     </tr>
     <br>
     <tr align="center">
       <td>
         <img src="images/q1/step6.png" align="middle" width="500px"/>
-        <figcaption>Level 4</figcaption>
+        <figcaption>Step 5</figcaption>
       </td>
 	  <td>
         <img src="images/q1/final.png" align="middle" width="500px"/>
@@ -136,7 +141,7 @@
   Show a screenshot of a slightly different Bezier curve by moving the original control points around and modifying the parameter \(t\) via mouse scrolling.
 </b>
 <p>
-    Using curve3.bzc, I obtained a slightly different Bezier curve by manually moving around some of the original control points and modifying t through mouse scrolling.
+    Using curve3.bzc, I obtained a slightly different Bezier curve by manually moving around the original control points and modifying t through mouse scrolling.
 </p>  
 <div align="middle">
 	<img src="images/q1/final_modified.png" align="middle" width="60%">
@@ -150,7 +155,13 @@
   Briefly explain how de Casteljau algorithm extends to Bezier surfaces and how you implemented it in order to evaluate Bezier surfaces.
 </b>
 <p>
-    YOUR RESPONSE GOES HERE
+    de Casteljau's algorithm extends to Bezier surfaces because instead of only having 1 Bezier curve, we now have multiple curves, each of which we perform de Casteljau's algorithm on 
+	to ultimately end up with 1 final point for each curve. Then we perform 1 final step of de Casteljau's on these final points to find the curve that connects these  
+	. For each curve, the process of performing de Casteljau's is the 
+	same as in Part 1 (i.e. given ), which means we can reuse our BezierCurve::evaluateStep() function from Part 1 to find the final point for each Bezier curve.
+</p>
+<p>
+    
 </p>
 <br>
 
@@ -199,18 +210,19 @@
 </b>
 <p>
     I implemented edge flips by closely following the instructions in the spec. I began by listing every mesh element (vertex, edge, face, 
-	and half-edge) that exists before and after flipping and defined the mesh elements in relation to each another. Then I went through each 
-	mesh element and updated its pointers to reflect its relationship to other mesh elements after the flipping operation takes place. 
+	and half-edge) that exists before and after flipping and defined the mesh elements in relation to each another. Given that the input
+	edge is the edge being flipped, we can define each element based on it's relationship to this edge's halfedges. Then I went through 
+	each mesh element and updated its pointers to reflect its relationship to other mesh elements after the flipping operation takes place. 
 	Flipping an edge doesn't create any new elements, so the majority of the work after flipping an edge was to update pointers.
 </p>
 <p>
 	An implementation trick I used is drawing a detailed diagram labeling each mesh element that exists before and after flipping, which 
 	allowed me to keep track of exactly what updates needed to be made to the pointers of each mesh element. It also makes it clear what 
-	the relationship between mesh elements are, and I could directly translate these relationships into code, which was what the bulk of the
-	coding for this task consisted of. From the diagram below, we can see that when we flip edge bc, the main changes that get made are
-	(1) the orientation of faces f0 and f1 change, (2) edge e0 now connects vertices a and d instead of vertices b and c, and (3) the 
-	orientation of halfedges h0 and h3 is now horizontal instead of vertical because the edge they are associated with (e0) has changed to
-	be horizontally oriented.
+	the relationship between mesh elements are (both before and after flipping), and I could directly translate these relationships into code, 
+	which was what the bulk of the coding for this task consisted of. From the diagram below, we can see that when we flip edge bc, the 
+	main changes that get made are (1) the orientation of faces f0 and f1 change, (2) edge e0 now connects vertices a and d instead of vertices 
+	b and c, and (3) the orientation of halfedges h0 and h3 is now horizontal instead of vertical because the edge they are associated with 
+	(e0) has changed to be horizontally oriented.
 </p>
 <br>
 <div align="middle">
@@ -255,9 +267,10 @@
     Write about your eventful debugging journey, if you have experienced one.
 </b>
 <p>
-    Fortunately, I didn't experience an eventful debugging journey since I was able to get my edge flipping to work on the first try by 
+    I didn't experience an eventful debugging journey since I was able to get my edge flips to work on the first try by 
 	closely following the guidelines in the spec and drawing a detailed diagram labeling every mesh element before and after 
-	flipping so I knew exactly what updates had to made to the pointers of each mesh element.
+	flipping so I knew exactly what updates had to made to the pointers of each mesh element. Essentially, I translated the
+	relationships between mesh elements in my diagram into code, which helped prevent errors.
 </p>
 <br>
 
@@ -269,14 +282,20 @@
 <p>
     Similar to Part 4, I implemented edge splits by closely following the instructions in the spec and drawing a detailed diagram where I labeled 
 	every mesh element (vertex, edge, face, and half-edge) that exists before and after splitting, which allowed me to keep track of exactly what
-	updates need to be made to each mesh element along with what new elements I need to create. In doing so, I found that I had to create 1 new vertex,
-	3 new edges, 2 new faces, and 6 new half-edges.
+	updates needed to be made to each mesh element along with what new elements I need to create. Drawing this diagram was a helpful implementation
+	and debugging trick because it clearly shows the relationship between every mesh element before and after splitting, and I could directly 
+	translate these relationships into code, which is what the coding for this task consisted of.
 </p>
 <br>
 <div align="middle">
 	<img src="images/q5/edge_split_diagram.png" align="middle" width="90%">
 	<figcaption>Diagram labeling mesh elements before and after edge split</figcaption>
 </div>
+<br>
+<p>
+    From the diagram above, we can see that after splitting edge e0, which connects vertices b and c in the original mesh, new elements are created.
+	Specifically, we create 1 new vertex (m), 3 new edges (e5, e6, e7), 2 new faces (f2 and f3), and 6 new half-edges (h10, h11, h12, h13, h14, h15).
+</p>
 <br>
 
 <b>
@@ -330,10 +349,10 @@
     Write about your eventful debugging journey, if you have experienced one.
 </b>
 <p>
-    Similar to Part 4, I didn't experience an eventful debugging journey as I was able to get my edge splits working 
-	by closely following the instructions in the spec and drawing a detailed diagram showing what mesh elements exist 
-	before and after splitting, which allowed me to easily see how each mesh element should be updated and what new 
-	mesh elements I had to create.
+    Similar to Part 4, I didn't experience an eventful debugging journey as I was able to get my edge splits working on the first try 
+	by closely following the instructions in the spec and drawing a detailed diagram showing what mesh elements exist before and after 
+	splitting, which allowed me to easily see how each mesh element should be updated and what new mesh elements I had to create. Essentially, I directly
+	translated the relationships between mesh elements in my diagram into code, which prevented errors. 
 </p>
 <br>
 
@@ -343,22 +362,25 @@
 </b>
 <p>
 	I split boundary edges similarly to how I split non-boundary edges. I drew a diagram labeling every mesh element that exists before and after 
-	splitting, allowing me to see how each element should be updated after splitting and what new elements needed to be created. Instead of turning 2
-	faces into 4 faces, when splitting boundary edges, we just turn 1 face into 2 faces. Thus, the new elements created from splitting a boundary are: 
-	1 new vertex (m), 2 new edges (am and mc), 1 new face (triangle amc), and 4 new half-edges (h6, h7, h8, h9).
+	splitting a boundary edge, allowing me to see how each element should be updated after splitting and what new elements needed to be created. Instead of turning 2
+	faces into 4 faces, we just turn 1 face into 2 faces when splitting boundary edges. Thus, the new elements created from splitting a boundary edge are: 
+	1 new vertex (m), 2 new edges (e3 and e4), 1 new face (f1), and 4 new half-edges (h6, h7, h8, h9).
 </p>
 <div align="middle">
 	<img src="images/q5/ec/boundary_edge_split_diagram.png" align="middle" width="90%">
-	<figcaption>Diagram labeling mesh elements before and after splitting a boundary edge</figcaption>
+	<figcaption>Diagram labeling mesh elements before and after splitting a boundary edge. The boundary edge we're splitting is e0, which connects vertices 
+		a and b in the original mesh.
+	</figcaption>
 </div>
 <p>
-	Before splitting, for the half-edges associated with the boundary edge (h0 and h1), it's also important to indicate which edge is inside the 
-	triangle face versus which is in the boundary face. For the edge e0 passed into the splitEdge function, I check if e0->halfedge is in the boundary. 
+	Before splitting, for the half-edges associated with the boundary edge (h0 and h1), it's also important to indicate which halfedge is inside the 
+	triangle face versus which is in the boundary face. For the edge e0 passed into HalfedgeMesh::splitEdge(), I check if e0->halfedge is in the boundary. 
 	If it's not, I set halfedge h0 to be e0->halfedge->twin since I always want h0 to be the halfedge associated with the boundary edge that's in the 
 	boundary as that's how it's labeled in my diagram. Then I can set all the other mesh elements based on h0.
-
+</p>
+<p>
 	Below are images of beetle.dae before any boundary edge splits and after splitting some boundary edges (and also some non-boundary edges to ensure that
-	splitting both boundary and non-boundary edges work). 
+	splitting both boundary and non-boundary edges in the same .dae file work). 
 </p>
 <br>
 <div align="middle">

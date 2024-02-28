@@ -470,10 +470,8 @@
   Take some notes, as well as some screenshots, of your observations on how meshes behave after loop subdivision. What happens to sharp corners and edges? Can you reduce this effect by pre-splitting some edges?
 </b>
 <p>
-    Without pre-splitting: As we continue performing loop subdivision on the cube, the sharp corners and edges of the cube get more rounded out and smoothed. This is because every loop subdivision results in
-	more triangles, which can result in a smoother mesh
-	
-	This effect can be reduced by pre-splitting some edges.
+    Without pre-splitting: As we continue performing loop subdivision on the cube, the sharp corners and edges of the cube get more rounded out and smoothed. This may be because every loop subdivision results in
+	more triangles which are also smaller, which can result in a finer mesh, which can result in curves and edges being more smoothed out. This effect can be reduced by pre-splitting some edges.
 </p>
 <!-- Loop subdivision of cube without pre-splits -->
 <p>
@@ -523,7 +521,9 @@
   Load dae/cube.dae. Perform several iterations of loop subdivision on the cube. Notice that the cube becomes slightly asymmetric after repeated subdivisions. Can you pre-process the cube with edge flips and splits so that the cube subdivides symmetrically? Document these effects and explain why they occur. Also explain how your pre-processing helps alleviate the effects.
 </b>
 <p>
-    Below are results of splitting the diagonal edge in cube.dae before beginning loop subdivision. Pre-processing the cube by splitting this diagonal edge can help the cube subdivide more symmetrically because it makes the face of the cube more symmetrical. 
+    The images from above show how loop subdivision without any splitting or flipping beforehand can result in the cube becoming slightly asymmetric. This is probably because the original cube face mesh looks asymmetrical since there's only 1 diagonal along the cube face, which means future subdivisions will be based on this diagonal, which can result in asymmetrical 
+	subdivisions since this diagonal makes certain corners or sides of the cube "heavier" than others. We can pre-process the cube so that it subdivides more symmetrically. Below are results of splitting the diagonal edge in cube.dae before beginning loop subdivision. Pre-processing the cube by splitting this diagonal edge can help the cube subdivide more symmetrically 
+	because it makes the face of the cube more symmetrical. Now there are 2 diagonals, which better balances and divides the cube face to be more symmetrical, and thus the subdivisions will be more symmetrical.
 </p>
 <!-- Loop subdivision of cube with pre-splits -->
 <div align="middle">

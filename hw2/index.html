@@ -156,7 +156,7 @@
 </b>
 <p>
     de Casteljau's algorithm extends to Bezier surfaces because instead of only having 1 curve, we now have multiple curves (let's say n), each of which we perform de Casteljau's algorithm on 
-	to ultimately end up with 1 final point for each curve. Then we perform de Casteljau's again on these n final points to obtain 
+	to ultimately end up with 1 final point for each curve. Then we perform de Casteljau's again on these n final points to obtain the final interpolated point for the Bezier surface.
 </p>
 <p>
 	For each curve, the process of performing de Casteljau's is the same as in Part 1 (i.e. given n original control points, we keep recursively using linear interpolation to find intermediate 
@@ -170,7 +170,7 @@
 	called, I pass in the points that the previous call to evaluateStep() returned because these points represent the next intermediate control points that we want to linearly interpolate.
 </p>
 <p>
-    controlPoints is a nxn grid of control points, where each row contains the control points for 1 curve. Thus, I iterate through each row of controlPoints and call BezierPatch::evaluate1D() on 
+    controlPoints is a 2D array of control points, where each row contains the control points for 1 curve. Thus, I iterate through each row of controlPoints and call BezierPatch::evaluate1D() on 
 	each row and the parameter u to find the 1 final point for each curve. I stored the final control points for each curve in a 1D vector called final_pt_for_all_curves. After obtaining the 
 	final point for each row of points in controlPoints, I call evaluate1D() one last time on the points in final_pt_for_all_curves and the parameter v to obtain the final interpolated point 
 	for the Bezier surface.
@@ -196,7 +196,11 @@
   Briefly explain how you implemented the area-weighted vertex normals.
 </b>
 <p>
-    YOUR RESPONSE GOES HERE
+    Starting with some halfedge h, I used a loop to keep looping until h != halfedge() to ensure . In the loop, I had another nested loop that obtained the positions for the 3 vertices in a triangle .
+	After obtaining these 3 vertices
+	
+	I began by getting the face for each 
+	getting . For every non-boundary face, 
 </p>
 <br>
 
@@ -412,7 +416,44 @@
   Briefly explain how you implemented the loop subdivision and describe any interesting implementation / debugging tricks you have used.
 </b>
 <p>
-    YOUR RESPONSE GOES HERE
+    I implemented loop subdivision by exactly following the 5 steps given in the spec. 
+</p>
+<p>
+	Step 1: I iterated through each vertex in the input mesh to compute its new position. For some vertex v,
+	it's new position is equal to (1 - n * u) * v->position + u * original_neighbor_position_sum. n is the vertex's degree, which can be found by calling v->degree(). u represents a weight whose 
+	value can be obtained based on the value of n. If n=3, u=3/16. Otherwise, u=3/(8n). v->position refers to the position of v in the input mesh, NOT the new position. original_neighbor_position_sum
+	represents the sum of the positions of v's neighboring vertices in the input mesh, NOT the new positions. I defined a helper function, sumOfNeighborsOriginalPositions(), to help me calculate this
+	sum. Given a vertex u, this helper function will use halfedges and twins to visit all neighboring vertices of u in the mesh, allowing me to sum the original positions of all neighboring vertices.
+	The algorithm for visiting neighboring vertices of a vertex is similar to how it was done in the printNeighbourPositions() function that was given in the spec. For each vertex, I also made sure 
+	to set its isNew flag to false to clearly indicate that it's part of the original mesh and not a newly created vertex.
+</p>
+<p>
+    Step 2: I iterated through every edge in the input mesh and computed the new position of a new vertex that gets created when we split an edge, and stored this new position in Edge::newPosition. 
+	The new position can be found by calculating (3.0 / 8.0) * (A + B) + (1.0 / 8.0) * (C + D), where A, B, C, and D represent positions of the vertices in the diagram given in the spec. 
+	For each edge, I also set its isNew flag to false to indicate that it's part of the original mesh and not a newly created edge.
+</p>
+<p>
+    Step 3: I iterated through every edge in the mesh and split the edge only if it's an edge in the input mesh and NOT a newly created edge. To check if an edge was originally in the input mesh, 
+	I checked if the 2 vertices that define the edge both have their isNew flags set to false. This check is important because without it, this step can result in an infinite loop because it keeps 
+	splitting all the newly created edges, which results in infinite splitting. Edges are split by calling splitEdge(), which was implemented in Part 5. A new vertex is created as a result of 
+	splitting the edge, and this vertex's newPosition is set to the edge's newPosition (which we calculated in step 2). In splitEdge(), I also made sure to set the isNew flag for this newly created vertex 
+	to true.
+</p>
+<p>
+    Step 4: I iterated through every edge in the mesh and flipped new blue edges that connect an old and new vertex by calling flipEdge() on the edge, which we implemented in Part 4. This check
+	consists of (1) checking that the edge's isNew flag is true and (2) for the 2 vertices associated with that edge, checking that the isNew flag for one of these vertices is true while the isNew
+	flag for the other is false. If both these conditions are met, then we flip the edge. This distinction between new BLUE versus new BLACK edges is important because we only want to flip new BLUE edges.
+	Thus, in splitEdge(), I only set the isNew flag for new BLUE edges to be true. The new black edge that's created by splitting an original black edge into 2 still has its isNew set to false.
+</p>
+<p>
+    Step 5: I iterated through all vertices (old and new) in the mesh and set v->position to be v->newPosition.
+</p>
+<p>
+    After implementing all 5 steps of Part 6, my upsampling wasn't working because there was an infinite loop, and I had difficulty isolating which step the infinite loop was caused by because every step involves 
+	looping over mesh elements. Thus, one debugging trick I used was commenting out my code for different steps and seeing if the infinite loop still existed when I tried to upsample. 
+	For example, I commented out my code for steps 4 and 5, and found that the infinite loop was still present, which helped me realize my problem came from step 3. My problem was that I was splitting 
+	all edges when I should've only been splitting edges that were in the original input mesh, and not splitting new edges (since splitting new edges will result in infinite splitting). After fixing this, 
+	the infinite looping was resolved.
 </p>
 <br>
 
@@ -421,7 +462,7 @@
   Take some notes, as well as some screenshots, of your observations on how meshes behave after loop subdivision. What happens to sharp corners and edges? Can you reduce this effect by pre-splitting some edges?
 </b>
 <p>
-    YOUR RESPONSE GOES HERE
+    Without pre-splitting: As we continue performing loop subdivision on the cube, the sharp corners and edges get more rounded out and smoothed. This effect can be reduced by pre-splitting some edges.
 </p>
 <!-- Loop subdivision of cube without pre-splits -->
 <p>
@@ -471,48 +512,48 @@
   Load dae/cube.dae. Perform several iterations of loop subdivision on the cube. Notice that the cube becomes slightly asymmetric after repeated subdivisions. Can you pre-process the cube with edge flips and splits so that the cube subdivides symmetrically? Document these effects and explain why they occur. Also explain how your pre-processing helps alleviate the effects.
 </b>
 <p>
-    Below are results of splitting some edges in cube.dae before beginning loop subdivision. Pre-processing by pre-splitting some edges makes the cube subdivide more symmetrically because 
+    Below are results of splitting the diagonal edge in cube.dae before beginning loop subdivision. Pre-processing the cube by splitting this diagonal edge can help the cube subdivide more symmetrically because it makes the face of each cube symmetrical.
 </p>
 <!-- Loop subdivision of cube with pre-splits -->
 <div align="middle">
 	<table style="width:100%">
 	  <tr align="center">
 		<td>
-		  <img src="images/q6/presplit_option2/start.png" align="middle" width="500px"/>
+		  <img src="images/q6/presplit_option/start.png" align="middle" width="500px"/>
 		  <figcaption>cube.dae with no splits and no loop subdivisions</figcaption>
 		</td>
 		<td>
-		  <img src="images/q6/presplit_option2/1split.png" align="middle" width="500px"/>
-		  <figcaption>cube.dae with 1 edge split but no loop subdivisions </figcaption>
+		  <img src="images/q6/presplit_option/presplit.png" align="middle" width="500px"/>
+		  <figcaption>cube.dae after splitting the diagonal edge (but no loop subdivisions) </figcaption>
 		</td>
 	  </tr>
 	  <br>
 	  <tr align="center">
 		<td>
-		  <img src="images/q6/presplit_option2/2splits.png" align="middle" width="500px"/>
-		  <figcaption>cube.dae with more edge splits but no loop subdivisions</figcaption>
-		</td>
-		<td>
-		  <img src="images/q6/presplit_option2/1loop.png" align="middle" width="500px"/>
+		  <img src="images/q6/presplit_option/1loop.png" align="middle" width="500px"/>
 		  <figcaption>1 loop subdivision</figcaption>
 		</td>
+		<td>
+			<img src="images/q6/presplit_option/2loops.png" align="middle" width="500px"/>
+			<figcaption>2 loop subdivisions</figcaption>
+		</td>
 	  </tr>
 	  <br>
 	  <tr align="center">
 		<td>
-		  <img src="images/q6/presplit_option2/2loops.png" align="middle" width="500px"/>
-		  <figcaption>2 loop subdivisions</figcaption>
-		</td>
-		<td>
-		  <img src="images/q6/presplit_option2/3loops.png" align="middle" width="500px"/>
+		  <img src="images/q6/presplit_option/3loops.png" align="middle" width="500px"/>
 		  <figcaption>3 loop subdivisions</figcaption>
 		</td>
+		<td>
+			<img src="images/q6/presplit_option/4loops.png" align="middle" width="500px"/>
+			<figcaption>4 loop subdivisions</figcaption>
+		</td>
 	  </tr>
 	  <br>
 	  <tr align="center">
 		<td>
-		  <img src="images/q6/presplit_option2/4loops.png" align="middle" width="500px"/>
-		  <figcaption>4 loop subdivisions</figcaption>
+		  <img src="images/q6/presplit_option/5loops.png" align="middle" width="500px"/>
+		  <figcaption>5 loop subdivisions</figcaption>
 		</td>
 	  </tr>
 	</table>

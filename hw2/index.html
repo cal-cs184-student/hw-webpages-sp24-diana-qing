@@ -229,7 +229,9 @@
 	and half-edge) that exists before and after flipping and defined the mesh elements in relation to each another. Given that the input
 	edge e0 is the edge being flipped, we can define each element based on it's relationship to e0's halfedges. Then I went through 
 	each mesh element and updated its pointers to reflect its relationship to other mesh elements after the flipping operation takes place. 
-	Flipping an edge doesn't create any new elements, so the majority of the work after flipping an edge was to update pointers.
+	Flipping an edge doesn't create any new elements, so the majority of the work after flipping an edge was to update pointers. For halfedges,
+	I updated pointers using setNeighbors() since it lets you easily specify the halfedge's next, twin, source vertex, edge, and face. For edges,
+	vertices, and faces, I updated their halfedge pointers.
 </p>
 <p>
 	An implementation trick I used is drawing a detailed diagram labeling each mesh element that exists before and after flipping, which 
@@ -300,7 +302,9 @@
 	every mesh element (vertex, edge, face, and half-edge) that exists before and after splitting, which allowed me to keep track of exactly what
 	updates needed to be made to each mesh element along with what new elements I need to create. Drawing this diagram was a helpful implementation
 	and debugging trick because it clearly shows the relationship between every mesh element before and after splitting, and I could directly 
-	translate these relationships into code, which is what the coding for this task consisted of.
+	translate these relationships into code, which is what the coding for this task consisted of. Similar to Part 4, I updated pointers for halfedges
+	using setNeighbors() since it lets us easily specify the halfedge's next, twin, source vertex, edge, and face. For edges, vertices, and faces, 
+	I updated their halfedge pointers.
 </p>
 <br>
 <div align="middle">
@@ -512,47 +516,47 @@
   Load dae/cube.dae. Perform several iterations of loop subdivision on the cube. Notice that the cube becomes slightly asymmetric after repeated subdivisions. Can you pre-process the cube with edge flips and splits so that the cube subdivides symmetrically? Document these effects and explain why they occur. Also explain how your pre-processing helps alleviate the effects.
 </b>
 <p>
-    Below are results of splitting the diagonal edge in cube.dae before beginning loop subdivision. Pre-processing the cube by splitting this diagonal edge can help the cube subdivide more symmetrically because it makes the face of each cube symmetrical.
+    Below are results of splitting the diagonal edge in cube.dae before beginning loop subdivision. Pre-processing the cube by splitting this diagonal edge can help the cube subdivide more symmetrically because it makes the face of the cube more symmetrical. 
 </p>
 <!-- Loop subdivision of cube with pre-splits -->
 <div align="middle">
 	<table style="width:100%">
 	  <tr align="center">
 		<td>
-		  <img src="images/q6/presplit_option/start.png" align="middle" width="500px"/>
+		  <img src="images/q6/presplit/start.png" align="middle" width="500px"/>
 		  <figcaption>cube.dae with no splits and no loop subdivisions</figcaption>
 		</td>
 		<td>
-		  <img src="images/q6/presplit_option/presplit.png" align="middle" width="500px"/>
+		  <img src="images/q6/presplit/presplit.png" align="middle" width="500px"/>
 		  <figcaption>cube.dae after splitting the diagonal edge (but no loop subdivisions) </figcaption>
 		</td>
 	  </tr>
 	  <br>
 	  <tr align="center">
 		<td>
-		  <img src="images/q6/presplit_option/1loop.png" align="middle" width="500px"/>
+		  <img src="images/q6/presplit/1loop.png" align="middle" width="500px"/>
 		  <figcaption>1 loop subdivision</figcaption>
 		</td>
 		<td>
-			<img src="images/q6/presplit_option/2loops.png" align="middle" width="500px"/>
+			<img src="images/q6/presplit/2loops.png" align="middle" width="500px"/>
 			<figcaption>2 loop subdivisions</figcaption>
 		</td>
 	  </tr>
 	  <br>
 	  <tr align="center">
 		<td>
-		  <img src="images/q6/presplit_option/3loops.png" align="middle" width="500px"/>
+		  <img src="images/q6/presplit/3loops.png" align="middle" width="500px"/>
 		  <figcaption>3 loop subdivisions</figcaption>
 		</td>
 		<td>
-			<img src="images/q6/presplit_option/4loops.png" align="middle" width="500px"/>
+			<img src="images/q6/presplit/4loops.png" align="middle" width="500px"/>
 			<figcaption>4 loop subdivisions</figcaption>
 		</td>
 	  </tr>
 	  <br>
 	  <tr align="center">
 		<td>
-		  <img src="images/q6/presplit_option/5loops.png" align="middle" width="500px"/>
+		  <img src="images/q6/presplit/5loops.png" align="middle" width="500px"/>
 		  <figcaption>5 loop subdivisions</figcaption>
 		</td>
 	  </tr>

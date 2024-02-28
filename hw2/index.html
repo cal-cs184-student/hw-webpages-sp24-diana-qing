@@ -69,7 +69,8 @@
 </b>
 <p>
     Given n control points, de Casteljau's algorithm allows us to recursively use linear interpolation to find intermediate control points until there's only 1 point remaining, resulting in a 
-	smooth Bezier curve connecting this 1 final point to the leftmost and rightmost original control points. The algorithm also includes a parameter t, which is a value between 0 and 1, that controls .
+	smooth Bezier curve connecting this 1 final point to the leftmost and rightmost original control points. The algorithm also includes a parameter t, which is a value between 0 and 1, that controls 
+	where along a spline the intermediate control points that get calculated in each step lie.
 </p>
 <p>
 	Starting with n control points, de Casteljau's algorithm uses linear interpolation to find the n-1 intermediate control points. In the next step, it linearly interpolates these n-1 intermediate 
@@ -141,7 +142,7 @@
   Show a screenshot of a slightly different Bezier curve by moving the original control points around and modifying the parameter \(t\) via mouse scrolling.
 </b>
 <p>
-    Using curve3.bzc, I obtained a slightly different Bezier curve by manually moving around the original control points and modifying t through mouse scrolling.
+    Using curve3.bzc, I obtained a slightly different Bezier curve by manually moving around the original control points and modifying t through scrolling my mouse up.
 </p>  
 <div align="middle">
 	<img src="images/q1/final_modified.png" align="middle" width="60%">
@@ -196,11 +197,14 @@
   Briefly explain how you implemented the area-weighted vertex normals.
 </b>
 <p>
-    Starting with some halfedge h, I used a loop to keep looping until h != halfedge() to ensure . In the loop, I had another nested loop that obtained the positions for the 3 vertices in a triangle .
-	After obtaining these 3 vertices
-	
-	I began by getting the face for each 
-	getting . For every non-boundary face, 
+    Starting with the halfedge h associated with this vertex (which I obtained by calling halfedge()), I iterated through every face that's incident to this vertex. 
+	For each non-boundary face, I obtained the positions of the 3 vertices that make up that face. Given some vertex h->vertex(), the other 2 vertices in the same triangle face
+	can be obtained by calling h->next()->vertex() and h->next()->next()->vertex(). One I got the positions of the 3 vertices that make up a face, I computed the area of the triangle
+	by multiplying the norm of the cross product of 2 edges of the triangle face with 1/2. I also obtained the normal for the face using h->face()->normal(). Then I computed the area 
+	weighted normal for the face by multiplying the normal and the area of the face, and added this result to areaWeightedNormalsTotal, a variable which represents the sum of area 
+	weighted normals for all faces incident to the vertex. Then I moved onto the next triangle face using the twin halfedge, and kept repeating this process while h != halfedge(). 
+	We can stop when h == halfedge() because this means we're back to where we started, so we know we've already iterated through every face incident to this vertex. At the end, 
+	I normalized areaWeightedNormalsTotal by calling unit(), and returned this result.
 </p>
 <br>
 
@@ -466,7 +470,10 @@
   Take some notes, as well as some screenshots, of your observations on how meshes behave after loop subdivision. What happens to sharp corners and edges? Can you reduce this effect by pre-splitting some edges?
 </b>
 <p>
-    Without pre-splitting: As we continue performing loop subdivision on the cube, the sharp corners and edges get more rounded out and smoothed. This effect can be reduced by pre-splitting some edges.
+    Without pre-splitting: As we continue performing loop subdivision on the cube, the sharp corners and edges of the cube get more rounded out and smoothed. This is because every loop subdivision results in
+	more triangles, which can result in a smoother mesh
+	
+	This effect can be reduced by pre-splitting some edges.
 </p>
 <!-- Loop subdivision of cube without pre-splits -->
 <p>

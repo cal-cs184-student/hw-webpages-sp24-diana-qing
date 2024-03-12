@@ -61,8 +61,8 @@
 <p>
     In Part 3, I implemented zero-bounce illumination and 2 different direct lighting functions, uniform hemisphere sampling and light 
 	importance sampling. In Part 4, I implemented indirect lighting to compute the radiance of light when it bounces off surfaces. Then 
-	I was able to use Parts 3 and 4 to render images with global illumination, creating more and more realistic scenes. I also used Russian 
-	Roulette to randomly terminate ray tracing to improve rendering time. In Part 5, I implemented adaptive sampling to vary the number of 
+	I was able to use Parts 3 and 4 to render images with global illumination, allowing me to create more realistic scenes. I also used Russian 
+	Roulette to randomly terminate ray tracing recursion to improve rendering time. In Part 5, I implemented adaptive sampling to vary the number of 
 	samples taken per pixel, increasing the number of samples we take for pixels that converge slower while decreasing the number of samples 
 	taken for pixels that converge faster.
 </p>
@@ -74,7 +74,7 @@
 <p>
     One problem I encountered was when implementing the BVH in Part 2. After implementing all of Part 2, I was able to render images correctly, but was not seeing as much speedup compared to
 	Part 1 and the staff reference times. For example, I could never get my rendering times to be less than 7 seconds for maxplanck.dae when the staff solution was 
-	able to render it in 0.173 seconds. I realized this was because on construct_bvh(), when I hit a leaf node, I was still iterating through every single primitive, 
+	able to render it in 0.173 seconds. I realized this was because in construct_bvh(), when I hit a leaf node, I was still iterating through every single primitive, 
 	when I should have only been iterating through the primitives between node->start and node->end. Fixing this led my rendering times to be much faster for Part 2.
 </p>
 <p>

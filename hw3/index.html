@@ -290,16 +290,16 @@ Compare rendering times on a few scenes with moderately complex geometries with 
   Compare rendering times on a few scenes with moderately complex geometries with and without BVH acceleration. Present your results in a one-paragraph analysis.
 </h3>
 <p>
-    As seen in the table below, for all scenes with relatively more complex geometries, the rendering times when using BVH acceleration are significantly faster than 
-	when not using BVH acceleration. This is because the average number of ray intersection tests we need to do per ray drastically decreases when we use BVH 
+    As seen in the table below, for all scenes with relatively more complex geometries, the rendering times when using BVH are significantly faster than 
+	when not using BVH. This is because the average number of ray intersection tests we need to do per ray drastically decreases when we use BVH 
 	because if we know a ray doesn't hit a bounding box containing multiple primitives, that ray won't intersect any of the
 	primitives in the box, which means we do less ray intersection tests because we don't have to individually test whether that ray will hit every 
 	single primitive in the scene. We only need to do ray intersection tests between the ray and each primitive in a leaf node, which contains at most max_leaf_node
 	primitives, which is less tests than if we weren't using BVH. Without BVH, we still have to do ray intersection tests for every primitive in the scene, 
-	which is why the average number of intersection tests per ray is much higher. We also also see that the ray intersection complexity looks to be 
-	more logarithmic when using BVH, as opposed to more linear when not using BVH. For example, with maxplanck.dae, the BVH is built from 50801 primitives.
-	With BVH, we get on average log(50801) intersection tests per ray. Without BVH, we get on average (1/7 * 50801) intersection tests per ray. In summary, 
-	the speedup provided by BVH is very significant. 
+	which is why the average number of intersection tests per ray is much higher. We also see that the ray intersection complexity looks to be 
+	more logarithmic (with respect to the number of primitives) when using BVH, as opposed to more linear when not using BVH. For example, with 
+	maxplanck.dae, the BVH is built from 50801 primitives. With BVH acceleration, we get on average log(50801) intersection tests per ray. 
+	Without BVH, we get on average (1/7 * 50801) intersection tests per ray. In summary, the speedup provided by BVH is very significant. 
 </p>
 <table border="1">
 	<tr>

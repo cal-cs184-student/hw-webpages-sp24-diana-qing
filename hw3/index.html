@@ -487,7 +487,7 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
   </table>
 </div>
 <p>
-    With more light rays, the scene gets less grainy and less noisy. When l=1, the bunny, its shadow, and the walls are all very grainy
+    With more light rays, the scene gets less grainy and less noisy. When l=1, the bunny, its shadow, and the walls are all very grainy. 
 </p>
 <br>
 
@@ -543,15 +543,15 @@ You will probably want to use the instructional machines for the above renders i
   <table style="width:100%">
     <tr align="center">
       <td>
-        <img src="images/4_global/4_CBspheres_lambertian_global.png" align="middle" width="400px"/>
+        <img src="images/4/4_global/4_CBspheres_lambertian_global.png" align="middle" width="400px"/>
         <figcaption>CBspheres_lambertian.dae rendered with global illumination</figcaption>
       </td>
       <td>
-        <img src="images/4_global/4_CBbunny_global.png" align="middle" width="400px"/>
+        <img src="images/4/4_global/4_CBbunny_global.png" align="middle" width="400px"/>
         <figcaption>CBbunny.dae rendered with global illumination</figcaption>
       </td>
 	  <td>
-        <img src="images/4_global/4_dragon_global.png" align="middle" width="400px"/>
+        <img src="images/4/4_global/4_dragon_global.png" align="middle" width="400px"/>
         <figcaption>dragon.dae rendered with global illumination</figcaption>
       </td>
     </tr>
@@ -567,11 +567,11 @@ You will probably want to use the instructional machines for the above renders i
   <table style="width:100%">
     <tr align="center">
       <td>
-        <img src="images/4_direct_and_indirect/4_CBspheres_lambertian_direct.png" align="middle" width="400px"/>
+        <img src="images/4/4_direct_and_indirect/4_CBspheres_lambertian_direct.png" align="middle" width="400px"/>
         <figcaption>Only direct illumination (CBspheres_lambertian.dae)</figcaption>
       </td>
       <td>
-        <img src="images/4_direct_and_indirect/4_CBspheres_lambertian_indirect.png" align="middle" width="400px"/>
+        <img src="images/4/4_direct_and_indirect/4_CBspheres_lambertian_indirect.png" align="middle" width="400px"/>
         <figcaption>Only indirect illumination (CBspheres_lambertian.dae)</figcaption>
       </td>
     </tr>
@@ -720,6 +720,49 @@ You will probably want to use the instructional machines for the above renders i
 </p>
 <br>
 
+<h3>
+For CBbunny.dae, output the Russian Roulette rendering with max_ray_depth set to 0, 1, 2, 3, 4, and 100(the -m flag). Use 1024 samples per pixel.
+</h3>
+<p>
+    The below images were rendered with t=8, s=1024, l=16, and r=(480, 360).
+</p>
+<!-- Example of including multiple figures -->
+<div align="middle">
+  <table style="width:100%">
+    <tr align="center">
+      <td>
+        <img src="images/4/4_sample_rate/4_CBbunny_s1.png" align="middle" width="400px"/>
+        <figcaption>max_ray_depth = 0 (CBbunny.dae)</figcaption>
+      </td>
+      <td>
+        <img src="images/4/4_sample_rate/4_CBbunny_s2.png" align="middle" width="400px"/>
+        <figcaption>max_ray_depth = 1 (CBbunny.dae)</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="images/4/4_sample_rate/4_CBbunny_s4.png" align="middle" width="400px"/>
+        <figcaption>max_ray_depth = 2 (CBbunny.dae)</figcaption>
+      </td>
+      <td>
+        <img src="images/4/4_sample_rate/4_CBbunny_s8.png" align="middle" width="400px"/>
+        <figcaption>max_ray_depth = 3 (CBbunny.dae)</figcaption>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <img src="images/4/4_sample_rate/4_CBbunny_s16.png" align="middle" width="400px"/>
+        <figcaption>max_ray_depth = 4 (CBbunny.dae)</figcaption>
+      </td>
+      <td>
+        <img src="images/4/4_sample_rate/4_CBbunny_s64.png" align="middle" width="400px"/>
+        <figcaption>max_ray_depth = 100 (CBbunny.dae)</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br>
+
 
 <h2 align="middle">Part 5: Adaptive Sampling (20 Points)</h2>
 <!-- Explain adaptive sampling. Walk through your implementation of the adaptive sampling.
@@ -761,21 +804,21 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
   <table style="width:100%">
     <tr align="center">
       <td>
-        <img src="images/your_file.png" align="middle" width="400px"/>
+        <img src="images/5/your_file.png" align="middle" width="400px"/>
         <figcaption>Rendered image (CBbunny.dae)</figcaption>
       </td>
       <td>
-        <img src="images/your_file.png" align="middle" width="400px"/>
+        <img src="images/5/your_file.png" align="middle" width="400px"/>
         <figcaption>Sample rate image (CBbunny_rate.dae)</figcaption>
       </td>
     </tr>
     <tr align="center">
       <td>
-        <img src="images/your_file.png" align="middle" width="400px"/>
+        <img src="images/5/your_file.png" align="middle" width="400px"/>
         <figcaption>Rendered image (example2.dae)</figcaption>
       </td>
       <td>
-        <img src="images/your_file.png" align="middle" width="400px"/>
+        <img src="images/5/your_file.png" align="middle" width="400px"/>
         <figcaption>Sample rate image (example2.dae)</figcaption>
       </td>
     </tr>

@@ -479,10 +479,15 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
   </table>
 </div>
 <p>
-    With more light rays, the scene and soft shadows gets less grainy and less noisy. When l=1, the bunny's body, its shadow, and the walls are all very grainy
-	and rough. The l=4 image looks noticeably less grainy than l=1, but still looks more grainy than the l=16 image. The l=16 image looks smoother but still has some 
-	grainiess in the walls and the bunny's shadows, especially around the edges of the shadow. The l=64 image looks smoother than l=16, with the walls 
+    With more light rays, the scene and soft shadows get less grainy and less noisy. When l=1, the bunny's body, its shadow, and the walls are all very grainy
+	and rough. You can see the individual black specks of the bunny's shadow and it doesn't look blended into the floor at all. 
+	The l=4 image looks noticeably less grainy than l=1, but still looks more grainy than the l=16 image, and the edges of the bunny's shadow 
+	still look noisy as you can still clearly see the individual black specks. The l=16 image looks smoother than l=4 but still has some grainiess in the 
+	walls and the bunny's shadows, especially the edges of the shadow. The specks in the shadow edges are still quite noticeable, but they look like 
+	they are starting to become better blended into the floor because the specks are less prominent compared to the l=1 and l=4 image.
+	The l=64 image looks less noisy than l=16, with the walls 
 	and the edges of the shadow looking much less grainy, and the shadow edge blending into the floor better and more smoothly compared to the other 3 images.
+	You also can't really see the individual specks in the shadow anymore, especially not as prominently as they appeared in l=1 and l=4.
 </p>
 <br>
 
@@ -491,8 +496,8 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
 </h3>
 <p>
     Lighting sampling produces a much smoother and less grainy rendering of the same images compared to uniform hemisphere sampling. For example,
-	for both uniform hemisphere sampling images, you can see small speckles covering the wall and ground, whereas for lighting sampling, the walls and 
-	grounds are very smooth and not as noisy.
+	both uniform hemisphere sampling images are quite noisy and grainy as you can noticeably see small speckles covering the wall and ground, 
+	whereas for lighting sampling, the walls and grounds are quite smooth and not grainy.
 </p>
 <br>
 
@@ -625,10 +630,10 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 <br>
 <p>
-    * For CBbunny.dae, compare rendered views with max_ray_depth set to 0, 1, 2, 3, 4, and 5(the -m flag). Use 1024 samples per pixel.
+	ENTER EXPLANATION
 </p>
 <h3>
-
+	For CBbunny.dae, compare rendered views with max_ray_depth set to 0, 1, 2, 3, 4, and 5(the -m flag). Use 1024 samples per pixel.
 </h3>
 <br>
 <p>

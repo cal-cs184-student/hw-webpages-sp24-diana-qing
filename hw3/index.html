@@ -290,9 +290,10 @@ Compare rendering times on a few scenes with moderately complex geometries with 
   Compare rendering times on a few scenes with moderately complex geometries with and without BVH acceleration. Present your results in a one-paragraph analysis.
 </h3>
 <p>
-    As seen in the table below, for all scenes with relatively more complex geometries, the rendering times when using BVH are significantly faster than 
+    As seen in the table below, for all scenes with relatively more complex geometries, the rendering times when using BVH acceleration 
+	are significantly faster than 
 	when not using BVH. This is because the average number of ray intersection tests we need to do per ray drastically decreases when we use BVH 
-	because if we know a ray doesn't hit a bounding box containing multiple primitives, that ray won't intersect any of the
+	acceleration because if we know a ray doesn't hit a bounding box containing multiple primitives, that ray won't intersect any of the
 	primitives in the box, which means we do less ray intersection tests because we don't have to individually test whether that ray will hit every 
 	single primitive in the scene. We only need to do ray intersection tests between the ray and each primitive in a leaf node, which contains at most max_leaf_node
 	primitives, which is less tests than if we weren't using BVH. Without BVH, we still have to do ray intersection tests for every primitive in the scene, 
@@ -426,7 +427,7 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
         <figcaption>CBbunny.dae</figcaption>
       </td>
 	  <td>
-        <img src="images/3/3_CBbunny_64_32.png.png" align="middle" width="400px"/>
+        <img src="images/3/3_CBbunny_64_32.png" align="middle" width="400px"/>
         <figcaption>CBbunny.dae</figcaption>
       </td>
     </tr>
@@ -437,7 +438,7 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
 		<figcaption>CBspheres_lambertian.dae</figcaption>
 	</td>
       <td>
-        <img src="images/3/3_CBspheres_lambertian_64_32.png.png" align="middle" width="400px"/>
+        <img src="images/3/3_CBspheres_lambertian_64_32.png" align="middle" width="400px"/>
         <figcaption>CBspheres_lambertian.dae</figcaption>
       </td>
     </tr>
@@ -478,7 +479,10 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
   </table>
 </div>
 <p>
-    With more light rays, the scene gets less grainy and less noisy. When l=1, the bunny, its shadow, and the walls are all very grainy. 
+    With more light rays, the scene and soft shadows gets less grainy and less noisy. When l=1, the bunny's body, its shadow, and the walls are all very grainy
+	and rough. The l=4 image looks noticeably less grainy than l=1, but still looks more grainy than the l=16 image. The l=16 image looks smoother but still has some 
+	grainiess in the walls and the bunny's shadows, especially around the edges of the shadow. The l=64 image looks smoother than l=16, with the walls 
+	and the edges of the shadow looking much less grainy, and the shadow edge blending into the floor better and more smoothly compared to the other 3 images.
 </p>
 <br>
 
@@ -486,7 +490,9 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
   Compare the results between uniform hemisphere sampling and lighting sampling in a one-paragraph analysis.
 </h3>
 <p>
-    Uniform hemisphere sampling looks 
+    Lighting sampling produces a much smoother and less grainy rendering of the same images compared to uniform hemisphere sampling. For example,
+	for both uniform hemisphere sampling images, you can see small speckles covering the wall and ground, whereas for lighting sampling, the walls and 
+	grounds are very smooth and not as noisy.
 </p>
 <br>
 

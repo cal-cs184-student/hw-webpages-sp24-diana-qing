@@ -529,7 +529,7 @@ You will probably want to use the instructional machines for the above renders i
 	We use Russian Roulette with termination_prob=0.3 to determine if we should terminate the recursion, which can 
 	help speed up our rendering times. If the result of the coin flip is true 
 	or if the max_ray_depth is equal to the depth of the ray, then we keep recursing. This second check is for cases where even though the coin flip 
-	returns false, since max_ray_dept > 1, then indirect illumination is on so we must trace at least one indirect bounce, so we have to recurse at 
+	returns false, since max_ray_depth > 1, then indirect illumination is on so we must trace at least one indirect bounce, so we have to recurse at 
 	least once. Next, using the BSDF of the passed in intersection, we 
 	take a random sample of a direction by calling randSample = isect.bsdf->sample_f(w_out, &wi, &pdf). wi represents the incoming radiance direction 
 	in object space, and we can convert it to world space by multiplying it by o2w, the object-to-world matrix. Now we can construct a new 
@@ -597,7 +597,8 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 <br>
 <p>
-    YOUR EXPLANATION GOES HERE
+    With only direct illumination, the image looks quite smooth and looks brighter than the indirect illumination image. However, the 
+	indirect illumination image looks like it's better able to capture the shadows cast onto the surrounding walls.
 </p>
 <br>
 
@@ -644,7 +645,13 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 <br>
 <p>
-	The image gets noticeably more dim when m=3 versus when m=2. 
+	The image gets noticeably more dim when m=3 versus when m=2. However, in both images, we can still clearly see how the light is able to capture the 
+	subtleties on the bunny's body and maintain it's realistic 3D appearance. This contributes 
+	to the quality of the rendered image compared to rasterization because rasterization could leave images looking non-realistic
+	because it doesn't capture the effects of light on the objects in a scene as well as raytracing does. Even in the m=3 case where the scene 
+	looks dimmer, we can still 
+	see the bumps on the bunny's body, which shows how the smaller details in the image are still being captured, leaving the image 
+	looking very realistic.
 </p>
 <h3>
 	For CBbunny.dae, compare rendered views with max_ray_depth set to 0, 1, 2, 3, 4, and 5(the -m flag). Use 1024 samples per pixel.
@@ -688,7 +695,9 @@ You will probably want to use the instructional machines for the above renders i
 	</table>
   </div>
 <p>
-    As the max_ray_depth increases, 
+    As the max_ray_depth increases, the image gets brighter. This is especially noticeable between m=1 and m=2, where the black shadows 
+	of the bunny's lower body becomes much lighter and greyer when m=2. As m increases, we can also see how the shadows at the edges of the walls 
+	are becoming brighter. For example, between m=2 and m=3, the edge between the back wall and the ceiling looks lighter.
 </p>
 <br>
 
@@ -741,7 +750,9 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 <br>
 <p>
-    YOUR EXPLANATION GOES HERE
+    As the number of samples per pixel increases, the image gets less noisy and grainy. For example, when s=1 and s=2, you can see all the tiny 
+	dots and grains throughout the image. There is still some noisiness even as we increase s to 16, and the image begins looking smoother when s=64. At 
+	s=1024, the walls and bunny look much smoother and sharper.
 </p>
 <br>
 
@@ -786,8 +797,12 @@ For CBbunny.dae, output the Russian Roulette rendering with max_ray_depth set 
     </tr>
   </table>
 </div>
+<p>
+    With Russian Roulette on, as the max_ray_depth increases, the image becomes brighter. This is especially apparent between when 
+	m=1 and m=2. The shadows of the bunny in m=1 are quite black and dark, but when m=2, the shadows are lighter and greyer. As we move from 
+	m=2 to m=3 to m=4 to m=100, we can also see how the edges of the walls look lighter, especially the edges between the walls and the ceiling.
+</p>
 <br>
-
 
 <h2 align="middle">Part 5: Adaptive Sampling (20 Points)</h2>
 <!-- Explain adaptive sampling. Walk through your implementation of the adaptive sampling.

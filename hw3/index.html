@@ -93,11 +93,11 @@ Show images with normal shading for a few small .dae files. -->
   Walk through the ray generation and primitive intersection parts of the rendering pipeline.
 </h3>
 <p>
-    At a high level, in ray generation, when we're given normalized image coordinates (x, y) in image space, 
+    At a high level, in ray generation, when we're given normalized image coordinates (x, y), 
 	we first transform these coordinates to camera space, generate the ray in camera space, 
 	then transform the ray to world space. This allows us to generate rays for any point we sample.
-	After generating the ray, we can check if they intersect with any primitives in the world to determine 
-	what color to color in each pixel. For ray-triangle intersection, we can use Möller-Trumbore's algorithm
+	After generating the ray, we can check if it intersects with any primitives in the scene to determine 
+	what color to shade in each pixel. For ray-triangle intersection, we can use Möller-Trumbore's algorithm
 	to determine if the ray intersects a triangle and if so, where the intersection is. For ray-sphere 
 	intersection, we can use discriminants and the quadratic formula to determine if the ray intersects a sphere,
 	and if so, where the closest intersection point is.
@@ -115,13 +115,12 @@ Show images with normal shading for a few small .dae files. -->
 	z=-1 plane, which means the z coordinate of the point in camera space is -1. 
 </p>
 <p>
-	Now that we have our cameria space coordinates, we can use it to generate a ray. Ultimately we want our ray 
+	Now that we have our camera space coordinates, we can use it to generate a ray. Ultimately we want our ray 
 	to be in world space. The new ray starts at the camera, and since the camera starts at 
 	pos in world space, the ray's origin will be pos. We can also convert the camera space coordinates to 
-	world space by multiplying it by c2w, the camera-to-world rotation matrix. 
-	giving us the ray's direction, which we also normalize. Now we have a ray in world space.
-
-	Then we set the min_t and max_t of our new ray to be nClip and fClip respectively.
+	world space by multiplying it by c2w, the camera-to-world rotation matrix. This gives us the 
+	ray's direction, which we also normalize. Now we have a ray in world space. Lastly, we set 
+	the min_t and max_t of our new ray to be nClip and fClip respectively.
 </p>
 <br>
 
@@ -231,9 +230,10 @@ Compare rendering times on a few scenes with moderately complex geometries with 
 	a leaf node, then we need to determine a split point and divide the primitives into left and right vectors based on this split point.
 </p>
 <p>
-	I followed a similar splitting heuristic as was shown in discussion 5. I used the bbox's extent to find the longest axis, then split on the longest 
+	I followed a similar splitting heuristic as was shown in discussion 5 as I thought it provided a good way to split the primitives into two halves 
+	relatively evenly and keep the BVH balanced. I used the bbox's extent to find the longest axis, then split on the longest 
 	axis. The actual split point I used was the average of the centroid's along that axis. I found the average of the centroid's by iterating through
-	all the primitives, summing their centroids, then dividing by the total number of primitives. I defined 2 vectors of primitives, left and right, to split 
+	all the primitives, summing their centroids, then dividing by the total number of primitives. I defined 2 vectors, left and right, to split 
 	primitives into. Then I iterated through each primitive again, and if the 
 	primitive's centroid along the axis we're splitting on is less than the average centroid along the axis we're splitting on, then I put the 
 	primitive into the left vector. Otherwise, I put the primitive into the right vector. For example, let's say bbox's longest axis is the x-axis, so I 
@@ -242,12 +242,11 @@ Compare rendering times on a few scenes with moderately complex geometries with 
 </p>
 <p>
 	After I finish dividing all primitives into the left or right vector, to prevent infinite recursion, I checked if either the left or right vector 
-	was empty. If one of them was empty, I moved one primitive from the non-empty vector to the empty one. This prevents either of the vectors from 
-	being empty.
+	was empty. If one of them was empty, I moved one primitive from the non-empty vector to the empty one.
 </p>
 <p>
 	Then I recursed on the left and right vectors. I set node->l to be the result of recursing on the left vector, and node->r to be the 
-	result of recursing on the right vector. After both recursions returned, we can return the node. 
+	result of recursing on the right vector. After both recursions returned, I returned the node. 
 </p>
 
 <h3>
@@ -296,7 +295,8 @@ Compare rendering times on a few scenes with moderately complex geometries with 
 	acceleration because if we know a ray doesn't hit a bounding box containing multiple primitives, that ray won't intersect any of the
 	primitives in the box, which means we do less ray intersection tests because we don't have to individually test whether that ray will hit every 
 	single primitive in the scene. We only need to do ray intersection tests between the ray and each primitive in a leaf node, which contains at most max_leaf_node
-	primitives, which is less tests than if we weren't using BVH. Without BVH, we still have to do ray intersection tests for every primitive in the scene, 
+	primitives, which is less tests than if we weren't using BVH. Without BVH, we still have to do ray intersection tests for most of the primitives 
+	in the scene, 
 	which is why the average number of intersection tests per ray is much higher. We also see that the ray intersection complexity looks to be 
 	more logarithmic (with respect to the number of primitives) when using BVH, as opposed to more linear when not using BVH. For example, with 
 	maxplanck.dae, the BVH is built from 50801 primitives. With BVH acceleration, we get on average log(50801) intersection tests per ray. 
@@ -358,14 +358,14 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
 <p>
     In uniform hemisphere sampling, I uniformly sampled num_samples of times in a hemisphere, where num_samples = number of lights in the scene * number of samples 
 	per area light source. I obtained a sample by calling hemisphereSampler->get_sample(). This sample is in object space, so I converted it to world 
-	space by multiplying it by the object-to-world space matrix, o2w. Then I created a new ray whose origin is the hit point (hit_p) and whose direction 
+	space by multiplying it by the object-to-world space matrix, o2w. Then I created a new ray whose origin is at the hit point and whose direction 
 	is the world-space coordinate of the sampled point. This is because we're trying to determine if a new ray going from the hit point in the sampled direction 
 	will intersect the light source. I also set the new ray's min_t to EPS_F to avoid numerical precision issues. 
 </p>
 <p>
 	Then I created a new Intersection object, tempIntersection, and checked whether my new ray intersects any light sources in the
 	bounding volume hierarchy. This was done by calling BVHAccel::intersect(), which we implemented in Part 2 Task 3. 
-	If there is an intersection, we want to know much light arrived at that intersection point, which we estimate using a Monte Carlo estimator.
+	If there's an intersection, we want to know much light arrived at that intersection point, which we estimate using a Monte Carlo estimator.
 	Using the Monte Carlo estimator formula in the spec, we need to calculate (f_r * L_i * cosTheta)/pdf.
 	I calculate f_r to be isect.bsdf->f(w_out, wi), where w_out is the outgoing light direction in local space, wi is the sampled point 
 	in local space, and f is the function we implemented in Part 3 Task 1 that calculates the BSDF of the intersection.
@@ -384,7 +384,7 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
 <p>
 	In light importance sampling, we sample the lights in the scene directly rather than in uniform directions in a hemisphere to 
 	reduce noise in our rendering. To implement light importance sampling, I iterated through every light in the scene. 
-	For each light, we need to determine how many times we need to sample. If the light is a point light source, we only need to sample ot 
+	For each light, we need to determine how many times we need to sample. If the light is a point light source, we only need to sample it 
 	once. Otherwise we need to sample the light ns_area_light times, where ns_area_light = total number of samples per area light source. 
 	For each sample, we compute the emitted radiance L_i = sample_L(hit_p, &wi, &distToLight, &pdf). 
 	wi is the sampled direction in world space and distToLight is the distance between the hit point and the light source in the direction of wi. 
@@ -481,9 +481,9 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
 <p>
     With more light rays, the scene and soft shadows get less grainy and less noisy. When l=1, the bunny's body, its shadow, and the walls are all very grainy
 	and rough. You can see the individual black specks of the bunny's shadow and it doesn't look blended into the floor at all. 
-	The l=4 image looks noticeably less grainy than l=1, but still looks more grainy than the l=16 image, and the edges of the bunny's shadow 
+	The l=4 image looks noticeably less noisy than l=1, but still looks more grainy than the l=16 image, and the edges of the bunny's shadow 
 	still look noisy as you can still clearly see the individual black specks. The l=16 image looks smoother than l=4 but still has some grainiess in the 
-	walls and the bunny's shadows, especially the edges of the shadow. The specks in the shadow edges are still quite noticeable, but they look like 
+	walls and the bunny's shadow, especially the edges of the shadow. The specks in the shadow edges are still quite noticeable, but they look like 
 	they are starting to become better blended into the floor because the specks are less prominent compared to the l=1 and l=4 image.
 	The l=64 image looks less noisy than l=16, with the walls 
 	and the edges of the shadow looking much less grainy, and the shadow edge blending into the floor better and more smoothly compared to the other 3 images.
@@ -495,9 +495,13 @@ Compare the results between uniform hemisphere sampling and lighting sampling in
   Compare the results between uniform hemisphere sampling and lighting sampling in a one-paragraph analysis.
 </h3>
 <p>
-    Lighting sampling produces a much smoother and less grainy rendering of the same images compared to uniform hemisphere sampling. For example,
-	both uniform hemisphere sampling images are quite noisy and grainy as you can noticeably see small speckles covering the wall and ground, 
-	whereas for lighting sampling, the walls and grounds are quite smooth and not grainy.
+    At the same sampling rate (s) and number of light rays (l), 
+	lighting sampling produces a much smoother and less grainy rendering of the same images compared to uniform hemisphere sampling. For example,
+	the uniform hemisphere sampling images of the bunny and spheres are quite noisy and grainy as you can noticeably see small speckles covering 
+	the wall and ground, whereas for lighting sampling, the walls and ground are quite smooth and sharp. This is because we sample the light directly
+	in lighting sampling instead of just sampling in uniform directions across a hemisphere, so we're actually sampling in directions that 
+	impact the outgoing light. While uniform hemisphere sampling will eventually converge, it may take more samples or light rays to do so compared 
+	to lighting sampling as some of the directions it samples may not end up having much impact on the outgoing light.
 </p>
 <br>
 
@@ -516,19 +520,29 @@ You will probably want to use the instructional machines for the above renders i
 <p>
     The bulk of indirect lighting is implemented in PathTracer::at_least_one_bounce_radiance(), and I implemented it by closely following 
 	the pseudocode from lecture. We begin by checking the depth of the
-	passed in ray r. if r.depth is 1, we don't need more than one bounce, so we can just return the result of calling one_bounce_radiance().
-	If r.depth > 1, then we have to recursively call ourselves to compute the radiance at the next bounce. Using the BSDF of the passed in intersection, we 
+	passed in ray r. If r.depth is 1, we don't need more than one bounce, so we can just return the result of calling one_bounce_radiance().
+	Otherwise if r.depth > 1, then we may have to recursively call ourselves to compute the radiance at the next bounce.
+	Furthermore, if isAccumBounces is true, we 
+	make sure to add the result of one bounce to a running sum to ensure we're accumulating the radiance over all bounces.
+</p>
+</p>
+	We use Russian Roulette with termination_prob=0.3 to determine if we should terminate the recursion, which can 
+	help speed up our rendering times. If the result of the coin flip is true 
+	or if the max_ray_depth is equal to the depth of the ray, then we keep recursing. This second check is for cases where even though the coin flip 
+	returns false, since max_ray_dept > 1, then indirect illumination is on so we must trace at least one indirect bounce, so we have to recurse at 
+	least once. Next, using the BSDF of the passed in intersection, we 
 	take a random sample of a direction by calling randSample = isect.bsdf->sample_f(w_out, &wi, &pdf). wi represents the incoming radiance direction 
 	in object space, and we can convert it to world space by multiplying it by o2w, the object-to-world matrix. Now we can construct a new 
 	ray using the hit point as our origin and wi in world space as our direction. We also set the newRay.min_t to be EPS_F to deal with 
-	numerical precision issues, and set newRay.depth to be r.depth-1.
+	numerical precision issues, and set newRay.depth to be r.depth-1. This ensures that on each recursive call, we keep decrementing the ray depth 
+	since we don't want to recursive forever. 
 </p>
 <p>
-	Now we construct a new Intersection object, newIntersection, and call BVHAccel::intersect() to check if the new ray intersects with
-	something in the scene. If there is an intersection, we recursively call at_least_one_bounce_radiance, passing in the new ray and newIntersection
-	to compute L_i, the radiance at higher bounces. After we return, we compute the Monte Carlo estimator like we did in direct lighting. cosTheta is still 
-	equal to the dot product between the normal at the point of intersection and the world-space coordinate of the sampled point. Then if isAccumBounces=true,
-	we add the result of (randSample * L_i * cosTheta)/pdf to L_out in order to accumulate light across all depths. 
+	Now we construct a new Intersection object, newIntersection, and call BVHAccel::intersect() to check if the new ray intersects an object. If 
+	there's an intersection, we recursively call at_least_one_bounce_radiance(), passing in the new ray and newIntersection
+	to compute L_i, the radiance at the next bounce. After we return, we compute the Monte Carlo estimator like we did in direct lighting. cosTheta is still 
+	equal to the dot product between the normal at the point of intersection and the world-space coordinate of the sampled point. Also, if isAccumBounces=true,
+	we add the result of (randSample * L_i * cosTheta)/pdf to L_out in order to accumulate the light across all depths. 
 	If isAccumBounces=false, we just keep resetting L_out to be (randSample * L_i * cosTheta)/pdf since we don't accumulate the light across depths. 
 	At the end of the function, we return L_out.
 </p>
@@ -630,7 +644,7 @@ You will probably want to use the instructional machines for the above renders i
 </div>
 <br>
 <p>
-	ENTER EXPLANATION
+	The image gets noticeably more dim when m=3 versus when m=2. 
 </p>
 <h3>
 	For CBbunny.dae, compare rendered views with max_ray_depth set to 0, 1, 2, 3, 4, and 5(the -m flag). Use 1024 samples per pixel.
@@ -674,7 +688,7 @@ You will probably want to use the instructional machines for the above renders i
 	</table>
   </div>
 <p>
-    YOUR EXPLANATION GOES HERE
+    As the max_ray_depth increases, 
 </p>
 <br>
 
@@ -784,7 +798,9 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
 </h3>
 <p>
     Adaptive sampling allows us to dynamically change how many samples we take per pixel, allowing us to increase the number of samples we take 
-	for pixels that converge slowly and decrease the number of samples taken for pixels that converge quickly. To implement adaptive sampling, I modified 
+	for pixels that converge slowly and decrease the number of samples taken for pixels that converge quickly. This can help make rendering 
+	faster since we can reduce the amount of sampling we do for certain pixels. 
+	To implement adaptive sampling, I modified 
 	my PathTracer::raytrace_pixel() implementation from Part 1, and coded up the formulas for mu, variance, s1, and s2 given in the spec.
 </p>
 <p>
@@ -792,11 +808,11 @@ Pick one scene and render it with at least 2048 samples per pixel. Show a good s
 	multiple of samplesPerBatch. If so, then we can check for convergence (since we only check for convergence every samplesPerBatch pixels). To check for 
 	convergence, I follow the formulas from the spec and compute mu=s1/(num_samples_taken_so_far) and variance=(1.0 / (num_samples_taken_so_far - 1.0)) * (s2 - ((s1 * s1) / num_samples_taken_so_far)).
 	num_samples_taken_so_far is a double I increase by 1 each time we take another sample in the for loop.
-	Then I compute I using 1.96 * (sqrt(variance) / sqrt(num_samples_taken_so_far)). If I <= maxTolerance * m, I know the pixel converged so I can stop 
+	Then I compute I using 1.96 * (sqrt(variance) / sqrt(num_samples_taken_so_far)). If I <= maxTolerance * mu, I know the pixel converged so I can stop 
 	tracing more rays, and thus break out of the for loop. Otherwise, I repeat the steps already implemented from Task 1 Part 2: take another random sample, 
 	normalize the x and y coordinates of the sample, generate a camera ray using the normalized coordinates, set the camera's ray to be max_depth_ray (
-	this was from Part 4 Task 2), then call est_radiance_global_illumination on my new ray to get the sample estimated radiance, and add this 
-	sample estimated radiance to a color variable that is a sum of all the sample estimated radiance's. Now I also obtain the illuminance of 
+	this was from Part 4 Task 2), then call est_radiance_global_illumination() on my new ray to get the sample estimated radiance, and add this 
+	sample estimated radiance to a variable that is a sum of all the sample estimated radiance's. Now I also obtain the illuminance of 
 	the radiance, which is found by calling (sample estimated radiance).illum(). I add the value of the illuminance to s1, and add the square of the 
 	illuminance to s2.
 </p>
